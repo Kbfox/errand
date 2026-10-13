@@ -20,7 +20,7 @@ settings:
     SWIFT_VERSION: "5"
     DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
     CURRENT_PROJECT_VERSION: 1
-    MARKETING_VERSION: 0.1.0
+    MARKETING_VERSION: 1.0
     TARGETED_DEVICE_FAMILY: "1"
 targets:
   Gofer:
@@ -29,12 +29,16 @@ targets:
     sources: [App, Views, Services, Models, Resources]
     entitlements:
       path: App/Gofer.entitlements
+      properties:
+        aps-environment: development   # xcodegen regenerates the file from these; without it the key is wiped and push registration is ignored
     info:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Gofer
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiresFullScreen: true   # iPhone-only; App Store validation otherwise demands all four iPad orientations
         API_BASE_URL: $(API_BASE_URL)
         APP_KEY: $(APP_KEY)
         CFBundleURLTypes:
@@ -45,4 +49,3 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.gofer.ios
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait

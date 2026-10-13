@@ -150,11 +150,14 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
             continue;
           }
           const picks = ((call.arguments as any).picks ?? []) as { id: string; reason: string }[];
-          const firstUser = req.messages.find((m) => m.role === "user")?.content ?? "";
+          // Check against the request that led to this search: the latest user message that is not the
+          // app's "(id XXX)" pick message. Using the first message broke multi-request chats (a "blue switches"
+          // keyboard request made every black or white shoe look like a colour conflict).
+          const requestText = [...req.messages].reverse().find((m) => m.role === "user" && !/\(id [A-Za-z0-9_-]+\)/.test(m.content))?.content ?? lastUser;
           const rejected: Record<string, string> = {};
           const items = picks
             .filter((p) => known.has(p.id) && !NEGATED.test(p.reason ?? ""))   // model-proof: drop "but no X" picks
-            .filter((p) => { const bad = conflict(firstUser, known.get(p.id)!); if (bad) rejected[p.id] = bad; return !bad; })
+            .filter((p) => { const bad = conflict(requestText, known.get(p.id)!); if (bad) rejected[p.id] = bad; return !bad; })
             .map((p) => ({ ...known.get(p.id)!, reason: p.reason }))
             .slice(0, 3);
           await emit({ type: "candidates", items });
