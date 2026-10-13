@@ -12,7 +12,7 @@ LLM_PROVIDER = "workers-ai"       # workers-ai | openai-compatible (then set LLM
 LLM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 LLM_BASE_URL = ""
 CHANNEL3_BASE_URL = "https://api.trychannel3.com/v1"
-PUBLIC_BASE_URL = "http://localhost:8787"   # overridden after first deploy
+PUBLIC_BASE_URL = "https://errand.kbfoxtk.workers.dev"   # production; .dev.vars overrides locally
 APP_RETURN_SCHEME = "errand"      # errand://paypal/return?token=...
 
 # Secrets (never in this file). Local: worker/.dev.vars. Deployed: npm run secrets
