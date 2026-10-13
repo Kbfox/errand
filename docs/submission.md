@@ -27,6 +27,9 @@ Shot rules: no third-party music; product images come from Channel3 results (ret
 
 ---
 
+### Recording log (2026-10-13)
+Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Timestamps in the raw file are irregular, so **first transcode to CFR** (`ffmpeg -i raw.mov -vf fps=30,scale=1080:-2 cfr.mp4`) and cut from that; seeking the raw file lands on wrong frames. Cut list on the CFR timeline (seconds): `0-5, 12.5-29, 52.5-63.5, 92.5-127.5, 171-181, 209-223, 239-253, 275.5-282, 299.5-319.5, 334.5-347.5, 353.5-360.5, 367.5-376.5` → `Errand-demo.mp4`, 161 s, 1080×2346, no audio yet. Known soft spots: the first PayPal sheet was barely captured by the recorder (dialog → receipt), the second purchase shows the full PayPal page; the Orders page did not refresh in time after Simulate, the result shows on the final Orders screen. Narration/captions still to add (script above).
+
 ## 2. Devpost fields
 
 **Project name:** Errand
