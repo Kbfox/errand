@@ -46,7 +46,9 @@ enum AgentEvent: Decodable {
         case "message": self = .message(try c.decode(String.self, forKey: .text))
         case "checkout": self = .checkout(orderId: try c.decode(String.self, forKey: .orderId), approveUrl: try c.decode(URL.self, forKey: .approveUrl), candidate: try c.decode(Candidate.self, forKey: .candidate), reason: (try? c.decode(String.self, forKey: .reason)) ?? "")
         case "purchased": self = .purchased(orderId: try c.decode(String.self, forKey: .orderId), candidate: try c.decode(Candidate.self, forKey: .candidate), reason: (try? c.decode(String.self, forKey: .reason)) ?? "")
-        case "watching": self = .watching(watchId: try c.decode(String.self, forKey: .watchId), candidate: try c.decode(Candidate.self, forKey: .candidate), targetPrice: try c.decode(Double.self, forKey: .targetPrice))
+        case "watching":
+            let tp = (try? c.decode(Double.self, forKey: .targetPrice)) ?? Double((try? c.decode(String.self, forKey: .targetPrice)) ?? "") ?? 0
+            self = .watching(watchId: try c.decode(String.self, forKey: .watchId), candidate: try c.decode(Candidate.self, forKey: .candidate), targetPrice: tp)
         case "error": self = .error(try c.decode(String.self, forKey: .text))
         default: self = .done
         }

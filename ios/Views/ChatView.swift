@@ -49,7 +49,7 @@ struct ChatView: View {
         case let .candidates(_, items):
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(items) { c in
-                    CandidateCard(candidate: c, disabled: model.busy) { model.pick(c, checkout: checkout) }
+                    CandidateCard(candidate: c, disabled: model.busy) { focused = false; model.pick(c, checkout: checkout) }
                 }
             }
         case let .receipt(_, c, orderId, status, auto, reason):
@@ -83,6 +83,7 @@ struct ChatView: View {
     private func submit() {
         model.send(draft, checkout: checkout)
         draft = ""
+        focused = false
     }
 }
 

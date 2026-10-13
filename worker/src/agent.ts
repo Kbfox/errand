@@ -103,7 +103,9 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
       let result: unknown;
       try {
         if (call.name === "search_products") {
-          const a = call.arguments as { query: string; max_price?: number; min_price?: number; limit?: number };
+          const raw = call.arguments as { query: string; max_price?: unknown; min_price?: unknown; limit?: unknown };
+          const num = (v: unknown) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : undefined; };
+          const a = { query: String(raw.query ?? ""), max_price: num(raw.max_price), min_price: num(raw.min_price), limit: num(raw.limit) };
           await emit({ type: "status", text: `Searching: ${a.query}` });
           const found = await channel3.searchCandidates(env, {
             query: a.query,
@@ -146,7 +148,8 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           }
           checkoutStarted = true; // the app takes over from here; never create a second order in the same turn
         } else if (call.name === "watch_price") {
-          const a = call.arguments as { id: string; target_price: number };
+          const a = { id: String((call.arguments as any).id ?? ""), target_price: Number((call.arguments as any).target_price) };
+          if (!Number.isFinite(a.target_price) || a.target_price <= 0) throw new Error("target_price must be a positive number");
           const c = known.get(a.id);
           if (!c) throw new Error("unknown product id");
           if (presentedThisTurn || !/\d/.test(lastUser)) {
@@ -165,8 +168,9 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           result = { error: `unknown tool ${call.name}` };
         }
       } catch (e) {
+        // Tool failures go back to the model (it usually retries); the user only sees a status line.
         result = { error: String(e) };
-        await emit({ type: "error", text: String(e) });
+        await emit({ type: "status", text: "Retrying…" });
       }
       messages.push({ role: "tool", tool_call_id: call.id, name: call.name, content: JSON.stringify(result).slice(0, 12000) });
       if (checkoutStarted) break;
