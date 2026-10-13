@@ -40,7 +40,8 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - **10-13 深夜：第 3 周主体完成**。D1（users/rules/orders/watches）、规则引擎 `commerce.decide`、规则内用 vault_id 无人值守付款、盯价 `watch.evaluate`（cron 每 15 分钟 + `/debug/watches/:id/simulate` 强制价格走同一条代码路径）、iOS 三个 Tab（Errand / Orders / Rules）。模拟器实测：Rules 页设 $100/$500 → 聊天里 $76.90 的键盘直接 "Bought for you with PayPal"，订单 93G362961A2581028。
 - **安全闸（务必保留）**：`agent.ts` 里 start_checkout / watch_price 有服务端硬条件：同一轮刚 present_candidates 不允许下单；用户最新消息必须含商品 id 或购买动词。起因：只有一个候选时 Llama 跳过提问直接下单并自动扣款了。
 - 本地调试种数据：App 的 userId 在模拟器容器 `Library/Preferences/com.errand.ios.plist` 的 `errand.userId`（用 plistlib 读，plutil 会把点号当路径）；`wrangler d1 execute errand --local --command "UPDATE users SET vault_id=... WHERE id=..."` 可给用户种已保存钱包。
-- 待做（第 3 周剩余 / 第 4 周）：盯价流程在手机 UI 上过一遍（Orders 页 Simulate 按钮）；推送（可选）；物流写入入口；部署 Worker（`wrangler deploy` + `d1 migrations apply errand --remote` + `npm run secrets`）并把 PUBLIC_BASE_URL / App 的 API_BASE_URL 换成线上；TestFlight；视频；README；Devpost。
+- **10-13 20:56：第 3 周收口**。iPhone 18 Pro 模拟器（250FDF0D-DF15-4DC0-B569-B17ACF39C22A，Errand 专用，避开另一会话占用的 18 Pro Max）上：Watching 卡 → Simulate price drop → 订单页出现 "Bought on price drop" $63.00 COMPLETED（订单 70S37519TW733264L）。
+- 待做（第 4 周）：推送（可选）；物流写入入口；部署 Worker（`wrangler deploy` + `d1 migrations apply errand --remote` + `npm run secrets`）并把 PUBLIC_BASE_URL / App 的 API_BASE_URL 换成线上；TestFlight；视频；README；Devpost。
 - 本地联调：`cd worker && npm run dev` 必须在跑，App 的 `API_BASE_URL` 指向 localhost:8787。
 
 ## 约定
