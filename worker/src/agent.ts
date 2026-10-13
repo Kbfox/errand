@@ -3,6 +3,7 @@ import * as llm from "./llm";
 import * as channel3 from "./channel3";
 import * as commerce from "./commerce";
 import * as db from "./db";
+import { conflict } from "./constraints";
 
 export interface AgentRequest {
   messages: { role: "user" | "assistant"; content: string }[];
@@ -122,13 +123,16 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
             continue;
           }
           const picks = ((call.arguments as any).picks ?? []) as { id: string; reason: string }[];
+          const firstUser = req.messages.find((m) => m.role === "user")?.content ?? "";
+          const rejected: Record<string, string> = {};
           const items = picks
             .filter((p) => known.has(p.id) && !NEGATED.test(p.reason ?? ""))   // model-proof: drop "but no X" picks
+            .filter((p) => { const bad = conflict(firstUser, known.get(p.id)!); if (bad) rejected[p.id] = bad; return !bad; })
             .map((p) => ({ ...known.get(p.id)!, reason: p.reason }))
             .slice(0, 3);
           await emit({ type: "candidates", items });
           presentedThisTurn = true;
-          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length, note: "Now ask the user which one to buy and stop. Do not call start_checkout in this turn." };
+          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length, rejected_for_conflict: rejected, note: "Now ask the user which one to buy and stop. Do not call start_checkout in this turn." };
         } else if (call.name === "start_checkout") {
           const c = known.get((call.arguments as any).id);
           if (!c) throw new Error("unknown product id");
