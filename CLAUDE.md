@@ -30,6 +30,11 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - Channel3 自带 Price Tracking 接口（start/stop/history），盯价不用自己轮询
 - 沙盒 vault_id / customer id 记在对话里，不入库；真实实现要按用户持久化到 D1
 
+## 进度
+- **10-13 晚：第 2 周目标提前达成**。模拟器里从示例需求 → 3 张候选卡 → 点 Buy → agent 建单 → App 内 PayPal 登录付款 → 跳回 → 绿色收据卡，订单 4SS16439R7402661J COMPLETED $79.97，且 Vault 已存。
+- 待做（第 3 周）：规则引擎 + RulesView；盯价代买（Channel3 Price Tracking + vault_id 付款 + 推送）；订单持久化 D1 + 历史页；物流写入；提示词后处理（过滤理由里否定硬约束的候选）；部署 Worker 并把 PUBLIC_BASE_URL 换成线上地址；TestFlight。
+- 本地联调：`cd worker && npm run dev` 必须在跑，App 的 `API_BASE_URL` 指向 localhost:8787。
+
 ## 约定
 - 提交者 `-c user.name="Kbfox" -c user.email="52fdcbrgmr@privaterelay.appleid.com"`，trailer `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`
 - 远程 github.com/Kbfox/errand（公开，MIT，规则要求）
