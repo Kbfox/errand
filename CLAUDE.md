@@ -11,7 +11,7 @@
 1. 用户在模拟器过一遍 App（已是干净状态，可直接按 `docs/submission.md` 第 1 节脚本走）。盯价那句要点出**当前卡片上的完整标题**，否则 Llama 可能挑错商品（本次把 "Lofree typewriter keyboard" 理解成已买的 Wired 款）。
 2. 录视频：构建命令见下方"命令"，加 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`。推送横幅只显示几秒，录屏要连着拍。simulate 用 `curl -X POST .../debug/watches/<id>/simulate -H "x-app-key: …" -H "x-user-id: 88A7DF07-…" -d '{"price":58}'`（App 内 Debug 按钮同效）。
 3. TestFlight 公开链接：在 ASC → TestFlight → 外部测试 "Judges" → 添加构建版本 1 → 填测试信息（Beta 描述、反馈邮箱、联系人、**电话**）→ 提交 Beta App Review（助手的权限策略不允许代点提交；审核通常 1 天内）→ 群组"设置"里开启公开链接 → 链接填进 README 与 submission.md。内部群组 Tester 可把用户自己加为测试员装到真机。
-4. Devpost：内置浏览器 tab 已停在 Cloudflare 人机验证，用户点一下后助手继续 Join / 建草稿 / 填文案（`docs/submission.md` 第 2 节）。截止 **11-12 12:00 PT**，目标 11-10。
+4. Devpost：已注册并建好草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，状态 DRAFT，未提交）。已填：名称、标语、About 全文、Built with 12 个标签、Try it out（GitHub + /health）、Additional info（Individual / China / New / 技术要求说明 / Channel3 / 仓库 URL / demo URL 暂填 /health / 评委测试说明 / PayPal 体验 8 分 + 反馈 / AI 工具 / 学习 Significant）。**用户要做**：Project details 页填 YouTube 视频链接；Additional info 页勾 3 个资格声明框、把测试说明里的 `<email> / <password>` 换成美区沙盒个人账号、demo URL 换成 TestFlight 公开链接；Submit 页勾条款后点 Submit project。Devpost 的 Cloudflare / reCAPTCHA 都要用户在面板里点。截止 **11-12 12:00 PT**，目标 11-10。
 5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
 
 用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 有 users/rules/devices 行（两台设备 token）；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
