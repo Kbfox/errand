@@ -106,3 +106,23 @@ export async function searchCandidates(env: Env, input: SearchInput, userId?: st
   const res = (await search(env, input, userId)) as SearchResponse;
   return res.products.map(toCandidate).filter((c): c is Candidate => c !== null);
 }
+
+export async function productDetail(env: Env, productId: string): Promise<C3Product> {
+  const res = await fetch(`${env.CHANNEL3_BASE_URL}/products/${encodeURIComponent(productId)}`, {
+    headers: { "x-api-key": env.CHANNEL3_API_KEY },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new HttpError(502, `channel3 product ${productId} -> ${res.status}`, text);
+  return JSON.parse(text) as C3Product;
+}
+
+/** Subscribe Channel3's own price tracker too (webhook-based); harmless if it fails. */
+export async function startTracking(env: Env, productId: string): Promise<void> {
+  try {
+    await fetch(`${env.CHANNEL3_BASE_URL.replace(/\/v1$/, "/v0")}/price-tracking/start`, {
+      method: "POST",
+      headers: { "x-api-key": env.CHANNEL3_API_KEY, "content-type": "application/json" },
+      body: JSON.stringify({ canonical_product_id: productId }),
+    });
+  } catch { /* best effort */ }
+}

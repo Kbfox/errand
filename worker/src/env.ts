@@ -12,8 +12,7 @@ export interface Env {
   LLM_API_KEY?: string;
   AI: Ai;
   APP_KEY: string;
-  KV?: KVNamespace;
-  DB?: D1Database;
+  DB: D1Database;
 }
 
 export function json(data: unknown, status = 200, headers: Record<string, string> = {}): Response {

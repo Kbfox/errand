@@ -18,13 +18,11 @@ APP_RETURN_SCHEME = "errand"      # errand://paypal/return?token=...
 # Secrets (never in this file). Local: worker/.dev.vars. Deployed: npm run secrets
 #   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY, (optional) LLM_API_KEY
 
-# Week 2: persistence
-# [[kv_namespaces]]
-# binding = "KV"
-# id = "..."
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "errand"
-# database_id = "..."
-# [triggers]
-# crons = ["*/15 * * * *"]   # price watch
+[[d1_databases]]
+binding = "DB"
+database_name = "errand"
+database_id = "8263ec6e-0017-461b-9fb1-8cf9f888914e"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["*/15 * * * *"]   # price watch

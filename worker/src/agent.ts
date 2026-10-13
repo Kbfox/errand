@@ -1,7 +1,8 @@
 import { Env } from "./env";
 import * as llm from "./llm";
 import * as channel3 from "./channel3";
-import * as paypal from "./paypal";
+import * as commerce from "./commerce";
+import * as db from "./db";
 
 export interface AgentRequest {
   messages: { role: "user" | "assistant"; content: string }[];
@@ -13,7 +14,9 @@ export type AgentEvent =
   | { type: "status"; text: string }
   | { type: "candidates"; items: channel3.Candidate[] }
   | { type: "message"; text: string }
-  | { type: "checkout"; orderId: string; approveUrl: string; candidate: channel3.Candidate }
+  | { type: "checkout"; orderId: string; approveUrl: string; candidate: channel3.Candidate; reason: string }
+  | { type: "purchased"; orderId: string; captureId?: string; candidate: channel3.Candidate; reason: string }
+  | { type: "watching"; watchId: string; candidate: channel3.Candidate; targetPrice: number }
   | { type: "error"; text: string }
   | { type: "done" };
 
@@ -23,7 +26,10 @@ Rules:
 - First understand the need. If the request is clear enough to search, call search_products right away; do not ask more than one clarifying question.
 - After searching, check every result against the user's hard constraints (price cap, wired/wireless, size, colour...). Drop results that violate them. Use the "attributes" and "features" fields, not just the title.
 - Present at most 3 candidates by calling present_candidates with the ids and a one-sentence reason each that names a trade-off (e.g. "cheapest, but ABS keycaps"). Then write a short message asking which one to buy.
+- Never present a product whose reason admits it violates a hard constraint (e.g. "but no blue switches"). Leave it out instead.
 - When the user picks one, call start_checkout with its id. Never call start_checkout before the user has chosen.
+- If the user says to buy something only when it drops to or under a price ("buy when under $60", "if it hits 50"), call watch_price with that id and target price instead of start_checkout.
+- After start_checkout or watch_price returns, reply with one short sentence; the app shows the details.
 - Keep messages under 60 words. Prices in USD.`;
 
 const TOOLS: llm.ToolSpec[] = [
@@ -57,12 +63,20 @@ const TOOLS: llm.ToolSpec[] = [
   },
   {
     name: "start_checkout",
-    description: "Create a PayPal order for one product the user has chosen. Returns an approval URL the app will open.",
+    description: "Buy one product the user has chosen with PayPal. Depending on the user's spending rules this either completes immediately or opens a PayPal approval sheet.",
     parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+  },
+  {
+    name: "watch_price",
+    description: "Watch a product and buy it automatically when its price drops to or below target_price (USD).",
+    parameters: { type: "object", properties: { id: { type: "string" }, target_price: { type: "number" } }, required: ["id", "target_price"] },
   },
 ];
 
+const NEGATED = /\b(but|however|although|though)?\s*(no|not|without|lacks|lacking|isn't|aren't|doesn't|don't|non-)\b/i;
+
 export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => Promise<void>): Promise<void> {
+  const userId = req.userId ?? "anonymous";
   const known = new Map<string, channel3.Candidate>();
   for (const c of req.candidates ?? []) known.set(c.id, c);
 
@@ -94,24 +108,36 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           result = { note: "sorted by price ascending; verify constraints using attributes/features", products: found.map(({ buyUrl, image, ...rest }) => rest) };
         } else if (call.name === "present_candidates") {
           const picks = ((call.arguments as any).picks ?? []) as { id: string; reason: string }[];
-          const items = picks.map((p) => known.get(p.id)).filter((c): c is channel3.Candidate => !!c).slice(0, 3)
-            .map((c, i) => ({ ...c, reason: picks[i]?.reason }));
+          const items = picks
+            .filter((p) => known.has(p.id) && !NEGATED.test(p.reason ?? ""))   // model-proof: drop "but no X" picks
+            .map((p) => ({ ...known.get(p.id)!, reason: p.reason }))
+            .slice(0, 3);
           await emit({ type: "candidates", items });
-          result = { shown: items.map((c) => c.id) };
+          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length };
         } else if (call.name === "start_checkout") {
           const c = known.get((call.arguments as any).id);
           if (!c) throw new Error("unknown product id");
-          await emit({ type: "status", text: `Creating PayPal order for ${c.title}` });
-          const order = await paypal.createOrder(env, {
-            items: [{ name: c.title.slice(0, 127), unit_amount: { currency_code: c.currency, value: c.price.toFixed(2) }, quantity: "1", sku: c.id, url: c.buyUrl }],
-            currency: c.currency,
-            vault: true,
-          });
-          const approveUrl = paypal.approveLink(order);
-          if (!approveUrl) throw new Error("no approve link");
-          await emit({ type: "checkout", orderId: order.id, approveUrl, candidate: c });
-          result = { orderId: order.id, status: order.status };
+          await emit({ type: "status", text: `Checking your rules for ${c.title}` });
+          const p = await commerce.buy(env, userId, c);
+          if (p.mode === "auto") {
+            await emit({ type: "purchased", orderId: p.orderId, captureId: p.captureId, candidate: c, reason: p.decision.reason });
+            result = { bought: true, orderId: p.orderId, note: "Purchased automatically within the user's rules. Tell the user in one sentence." };
+          } else {
+            await emit({ type: "checkout", orderId: p.orderId, approveUrl: p.approveUrl!, candidate: c, reason: p.decision.reason });
+            result = { orderId: p.orderId, status: p.status, note: "PayPal approval sheet is opening in the app." };
+          }
           checkoutStarted = true; // the app takes over from here; never create a second order in the same turn
+        } else if (call.name === "watch_price") {
+          const a = call.arguments as { id: string; target_price: number };
+          const c = known.get(a.id);
+          if (!c) throw new Error("unknown product id");
+          const id = crypto.randomUUID();
+          await db.ensureUser(env, userId);
+          await db.insertWatch(env, { id, userId, candidate: c, targetPrice: a.target_price });
+          await channel3.startTracking(env, c.id);
+          await emit({ type: "watching", watchId: id, candidate: c, targetPrice: a.target_price });
+          result = { watching: true, watchId: id, currentPrice: c.price, targetPrice: a.target_price };
+          checkoutStarted = true;
         } else {
           result = { error: `unknown tool ${call.name}` };
         }

@@ -2,6 +2,9 @@ import { Env, HttpError, json } from "./env";
 import * as paypal from "./paypal";
 import * as channel3 from "./channel3";
 import * as agent from "./agent";
+import * as db from "./db";
+import * as commerce from "./commerce";
+import * as watch from "./watch";
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -13,7 +16,14 @@ export default {
       return json({ error: "internal", detail: String(e) }, 500);
     }
   },
+  async scheduled(_ev: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(watch.runAll(env).then((r) => console.log("price watch", JSON.stringify(r))));
+  },
 } satisfies ExportedHandler<Env>;
+
+function userOf(req: Request): string {
+  return req.headers.get("x-user-id") || "anonymous";
+}
 
 function requireAppKey(req: Request, env: Env) {
   if (req.headers.get("x-app-key") !== env.APP_KEY) throw new HttpError(401, "bad app key");
@@ -30,7 +40,7 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
     const token = url.searchParams.get("token"); // PayPal order id
     const cancelled = url.searchParams.get("cancelled");
     if (cancelled || !token) return redirectToApp(env, { status: "cancelled" });
-    const captured = await paypal.captureOrder(env, token);
+    const captured = await commerce.completeApproved(env, token);
     return redirectToApp(env, { status: captured.status, order: captured.id });
   }
 
@@ -56,9 +66,58 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   if (get && req.method === "GET") return json(await paypal.getOrder(env, get[1]));
 
   if (p === "/paypal/tracking" && req.method === "POST") {
-    const { orderId, captureId, trackingNumber, carrier } = (await req.json()) as { orderId: string; captureId: string; trackingNumber: string; carrier?: string };
-    return json(await paypal.addTracking(env, orderId, captureId, trackingNumber, carrier));
+    const { orderId, trackingNumber, carrier } = (await req.json()) as { orderId: string; trackingNumber: string; carrier?: string };
+    const row = await db.getOrder(env, orderId);
+    if (!row?.capture_id) throw new HttpError(404, "order not captured");
+    const r = await paypal.addTracking(env, orderId, row.capture_id, trackingNumber, carrier);
+    await db.updateOrder(env, orderId, { status: "SHIPPED", trackingNumber });
+    return json(r);
   }
+
+  const uid = userOf(req);
+
+  if (p === "/me" && req.method === "GET") {
+    const u = await db.ensureUser(env, uid);
+    return json({ userId: u.id, walletSaved: !!u.vault_id, rules: await db.getRules(env, uid), monthSpent: await db.monthSpent(env, uid) });
+  }
+  if (p === "/rules" && req.method === "PUT") {
+    const r = (await req.json()) as { auto_under_usd: number; monthly_cap_usd: number };
+    await db.ensureUser(env, uid);
+    await db.setRules(env, uid, { auto_under_usd: Number(r.auto_under_usd) || 0, monthly_cap_usd: Number(r.monthly_cap_usd) || 0 });
+    return json(await db.getRules(env, uid));
+  }
+  if (p === "/orders" && req.method === "GET") {
+    const rows = await db.listOrders(env, uid);
+    return json(rows.map((o) => ({ ...o, candidate: db.parseCandidate(o.candidate_json), candidate_json: undefined })));
+  }
+  if (p === "/watches" && req.method === "GET") {
+    const rows = await db.listWatches(env, uid);
+    return json(rows.map((w) => ({ ...w, candidate: db.parseCandidate(w.candidate_json), candidate_json: undefined })));
+  }
+  const cancel = p.match(/^\/watches\/([^/]+)\/cancel$/);
+  if (cancel && req.method === "POST") { await db.updateWatch(env, cancel[1], { status: "cancelled" }); return json({ ok: true }); }
+
+  // Approve a watch that the rules parked (needs_approval): returns a PayPal approval URL.
+  const approve = p.match(/^\/watches\/([^/]+)\/approve$/);
+  if (approve && req.method === "POST") {
+    const w = await db.getWatch(env, approve[1]);
+    if (!w) throw new HttpError(404, "no such watch");
+    const c = { ...db.parseCandidate(w.candidate_json), price: w.last_price ?? undefined } as any;
+    const pr = await commerce.buy(env, uid, c, "approved", { force: "approve" });
+    await db.updateWatch(env, w.id, { status: "bought", orderId: pr.orderId });
+    return json({ orderId: pr.orderId, approveUrl: pr.approveUrl });
+  }
+
+  // DEBUG ONLY (sandbox): run the real watch evaluation with a forced price, so the demo can show
+  // an unattended purchase without waiting for a real price drop.
+  const sim = p.match(/^\/debug\/watches\/([^/]+)\/simulate$/);
+  if (sim && req.method === "POST" && env.PAYPAL_ENV === "sandbox") {
+    const w = await db.getWatch(env, sim[1]);
+    if (!w) throw new HttpError(404, "no such watch");
+    const body = (await req.json().catch(() => ({}))) as { price?: number };
+    return json(await watch.evaluate(env, w, body.price ?? w.target_price));
+  }
+  if (p === "/debug/watches/run" && req.method === "POST" && env.PAYPAL_ENV === "sandbox") return json(await watch.runAll(env));
 
   if (p === "/channel3/search" && req.method === "POST") {
     const input = (await req.json()) as channel3.SearchInput & { raw?: boolean };
