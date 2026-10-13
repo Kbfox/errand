@@ -121,8 +121,14 @@ export function approveLink(order: PayPalOrder): string | undefined {
   return order.links?.find((l) => l.rel === "payer-action" || l.rel === "approve")?.href;
 }
 
-export async function addTracking(env: Env, captureId: string, trackingNumber: string, carrier = "OTHER", notify = true) {
-  return pp(env, "POST", "/v1/shipping/trackers-batch", {
-    trackers: [{ transaction_id: captureId, tracking_number: trackingNumber, status: "SHIPPED", carrier, notify_payer: notify }],
+// Orders v2 tracking (verified in sandbox 2026-10-13). The older /v1/shipping/trackers-batch
+// returns 403 NOT_AUTHORIZED for a default sandbox app, so use this one.
+export async function addTracking(env: Env, orderId: string, captureId: string, trackingNumber: string, carrier = "OTHER", carrierNameOther = "Errand courier", notify = true) {
+  return pp(env, "POST", `/v2/checkout/orders/${orderId}/track`, {
+    capture_id: captureId,
+    tracking_number: trackingNumber,
+    carrier,
+    ...(carrier === "OTHER" ? { carrier_name_other: carrierNameOther } : {}),
+    notify_payer: notify,
   });
 }

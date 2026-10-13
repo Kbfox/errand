@@ -19,6 +19,13 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - PayPal 开发者后台已有沙盒 App "Default Application"；沙盒账号：自动生成的 C2（中国）一对 + 用户手建的美区 Business/Personal 一对。**演示一律用美区账号**
 - Channel3、Qloo key：见对话进度
 
+## 第 1 周验证结果（2026-10-13，沙盒，美区账号）
+- OAuth → create order（带 `attributes.vault.store_in_vault=ON_SUCCESS`）→ 用户审批 → capture：**COMPLETED**，返回 `payment_source.paypal.attributes.vault.id`（VAULTED）
+- 用 `payment_source.paypal.vault_id` 建单：**直接 COMPLETED 并自动 capture，无需审批** → "盯价代买"无人值守付款可行
+- 物流：`POST /v2/checkout/orders/{id}/track` 201 可用；`/v1/shipping/trackers-batch` 403，不要用
+- Channel3 自带 Price Tracking 接口（start/stop/history），盯价不用自己轮询
+- 沙盒 vault_id / customer id 记在对话里，不入库；真实实现要按用户持久化到 D1
+
 ## 约定
 - 提交者 `-c user.name="Kbfox" -c user.email="52fdcbrgmr@privaterelay.appleid.com"`，trailer `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`
 - 远程 github.com/Kbfox/errand（公开，MIT，规则要求）

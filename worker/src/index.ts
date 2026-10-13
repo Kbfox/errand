@@ -55,8 +55,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   if (get && req.method === "GET") return json(await paypal.getOrder(env, get[1]));
 
   if (p === "/paypal/tracking" && req.method === "POST") {
-    const { captureId, trackingNumber, carrier } = (await req.json()) as { captureId: string; trackingNumber: string; carrier?: string };
-    return json(await paypal.addTracking(env, captureId, trackingNumber, carrier));
+    const { orderId, captureId, trackingNumber, carrier } = (await req.json()) as { orderId: string; captureId: string; trackingNumber: string; carrier?: string };
+    return json(await paypal.addTracking(env, orderId, captureId, trackingNumber, carrier));
   }
 
   if (p === "/channel3/search" && req.method === "POST") {
