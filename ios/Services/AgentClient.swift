@@ -7,6 +7,7 @@ struct AgentClient {
         let messages: [Message]
         let candidates: [Candidate]
         let userId: String
+        var imageBase64: String? = nil
     }
 
     static func stream(_ body: Request) -> AsyncThrowingStream<AgentEvent, Error> {

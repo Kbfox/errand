@@ -1,9 +1,11 @@
 import SwiftUI
+import PhotosUI
 
 struct ChatView: View {
     @Environment(CheckoutCoordinator.self) private var checkout
     @State private var model = ChatModel()
     @State private var draft = ""
+    @State private var photoItem: PhotosPickerItem?
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -44,6 +46,16 @@ struct ChatView: View {
         switch item {
         case let .user(_, text):
             HStack { Spacer(minLength: 48); Bubble(text: text, mine: true) }
+        case let .photo(_, data, text):
+            HStack {
+                Spacer(minLength: 48)
+                VStack(alignment: .trailing, spacing: 6) {
+                    if let ui = UIImage(data: data) {
+                        Image(uiImage: ui).resizable().scaledToFill().frame(width: 160, height: 160).clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    Bubble(text: text, mine: true)
+                }
+            }
         case let .assistant(_, text):
             HStack { Bubble(text: text, mine: false); Spacer(minLength: 48) }
         case let .candidates(_, items):
@@ -70,6 +82,20 @@ struct ChatView: View {
 
     private var inputBar: some View {
         HStack(spacing: 10) {
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                Image(systemName: "camera.fill").font(.system(size: 20)).frame(width: 36, height: 36)
+            }
+            .disabled(model.busy)
+            .onChange(of: photoItem) { _, item in
+                guard let item else { return }
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self), let jpeg = Self.downscaledJPEG(data) {
+                        model.sendPhoto(jpeg, caption: draft, checkout: checkout)
+                        draft = ""; focused = false
+                    }
+                    photoItem = nil
+                }
+            }
             TextField("What do you need?", text: $draft, axis: .vertical)
                 .lineLimit(1...4)
                 .textFieldStyle(.plain)
@@ -84,6 +110,17 @@ struct ChatView: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(.bar)
+    }
+
+    /// Keep uploads small: longest side 1024 px, JPEG 0.7.
+    static func downscaledJPEG(_ data: Data) -> Data? {
+        guard let img = UIImage(data: data) else { return nil }
+        let maxSide: CGFloat = 1024
+        let scale = min(1, maxSide / max(img.size.width, img.size.height))
+        let size = CGSize(width: img.size.width * scale, height: img.size.height * scale)
+        let r = UIGraphicsImageRenderer(size: size, format: { let f = UIGraphicsImageRendererFormat(); f.scale = 1; return f }())
+        let out = r.image { _ in img.draw(in: CGRect(origin: .zero, size: size)) }
+        return out.jpegData(compressionQuality: 0.7)
     }
 
     private func submit() {

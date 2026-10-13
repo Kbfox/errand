@@ -7,6 +7,7 @@ import { conflict } from "./constraints";
 
 export interface AgentRequest {
   messages: { role: "user" | "assistant"; content: string }[];
+  imageBase64?: string;                // a photo the user attached to the latest message (JPEG, no data: prefix)
   candidates?: channel3.Candidate[];   // what the app already shows, so the agent can refer to ids across turns
   userId?: string;
 }
@@ -90,6 +91,32 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
   const lastUser = [...req.messages].reverse().find((m) => m.role === "user")?.content ?? "";
   let presentedThisTurn = false;
   const userChose = (id: string) => lastUser.includes(id) || /\b(buy|take|order|get|purchase|go with|pick|that one|this one|yes)\b/i.test(lastUser);
+
+  // Pre-steps that do not need the model: a pasted product link, or an attached photo.
+  // Results are shown immediately and the model is told about them.
+  const urlMatch = lastUser.match(/https?:\/\/[^\s)]+/);
+  if (urlMatch || req.imageBase64) {
+    let found: channel3.Candidate[] = [];
+    if (req.imageBase64) {
+      await emit({ type: "status", text: "Looking at your photo" });
+      try { found = await channel3.imageSearchCandidates(env, { base64_image: req.imageBase64, limit: 6, filters: { availability: ["InStock"] } }, userId); } catch (e) { await emit({ type: "error", text: "Could not search by image: " + String(e) }); }
+    } else if (urlMatch) {
+      await emit({ type: "status", text: "Reading that link" });
+      const one = await channel3.lookupCandidate(env, urlMatch[0], userId);
+      if (one) found = [one];
+    }
+    if (found.length) {
+      found.sort((a, b) => a.price - b.price);
+      for (const c of found) known.set(c.id, c);
+      const items = found.slice(0, 3).map((c, i) => ({ ...c, reason: req.imageBase64 ? (i === 0 ? "closest match to your photo" : "similar, " + (c.price <= found[0].price ? "cheaper" : "pricier")) : "the product at the link you pasted" }));
+      await emit({ type: "candidates", items });
+      presentedThisTurn = true;
+      messages.push({ role: "system", content: `Already shown to the user from their ${req.imageBase64 ? "photo" : "link"} (id: title, $price): ` + items.map((c) => `${c.id}: ${c.title} $${c.price}`).join("; ") + `. Do NOT search or present again. Reply with one short sentence asking which one to buy (or confirming the one product).` });
+    } else if (req.imageBase64) {
+      await emit({ type: "message", text: "I couldn't find that product from the photo. Tell me what it is in a few words." });
+      return;
+    }
+  }
 
   let checkoutStarted = false;
   for (let step = 0; step < 6 && !checkoutStarted; step++) {

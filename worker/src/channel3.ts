@@ -126,3 +126,18 @@ export async function startTracking(env: Env, productId: string): Promise<void> 
     });
   } catch { /* best effort */ }
 }
+
+// ---- Image search and URL lookup (docs: /v1/image-search, /v1/lookup) ----
+export interface ImageSearchInput { image_url?: string; base64_image?: string; limit?: number; filters?: SearchInput["filters"] }
+
+export async function imageSearchCandidates(env: Env, input: ImageSearchInput, userId?: string): Promise<Candidate[]> {
+  const res = (await c3(env, "/image-search", { limit: 6, ...input }, userId)) as SearchResponse;
+  return res.products.map(toCandidate).filter((c): c is Candidate => c !== null);
+}
+
+export async function lookupCandidate(env: Env, url: string, userId?: string): Promise<Candidate | null> {
+  try {
+    const res = (await c3(env, "/lookup", { url }, userId)) as { product?: C3Product };
+    return res.product ? toCandidate(res.product) : null;
+  } catch { return null; }
+}

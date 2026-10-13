@@ -26,6 +26,12 @@ final class ChatModel {
         Task { await run(checkout: checkout) }
     }
 
+    func sendPhoto(_ jpeg: Data, caption: String, checkout: CheckoutCoordinator) {
+        guard !busy else { return }
+        items.append(.photo(image: jpeg, text: caption.isEmpty ? "Find this" : caption))
+        Task { await run(checkout: checkout, imageBase64: jpeg.base64EncodedString()) }
+    }
+
     func pick(_ c: Candidate, checkout: CheckoutCoordinator) {
         guard !busy else { return }
         items.append(.user(text: "I'll take the \(c.brand.map { "\($0) " } ?? "")\(c.title) for \(c.priceText). (id \(c.id))"))
@@ -36,6 +42,7 @@ final class ChatModel {
         items.compactMap {
             switch $0 {
             case let .user(_, t): return .init(role: "user", content: t)
+            case let .photo(_, _, t): return .init(role: "user", content: t + " (photo attached)")
             case let .assistant(_, t): return .init(role: "assistant", content: t)
             case let .receipt(_, c, id, st, auto, _): return .init(role: "assistant", content: "\(auto ? "Bought automatically" : "Order") \(id) for \(c.title): \(st).")
             case let .watching(_, c, t): return .init(role: "assistant", content: "Watching \(c.title); will buy at or under $\(t).")
@@ -44,10 +51,10 @@ final class ChatModel {
         }
     }
 
-    private func run(checkout: CheckoutCoordinator) async {
+    private func run(checkout: CheckoutCoordinator, imageBase64: String? = nil) async {
         busy = true; status = "Thinking…"
         defer { busy = false; status = nil }
-        let req = AgentClient.Request(messages: history(), candidates: Array(shown.values), userId: userId)
+        let req = AgentClient.Request(messages: history(), candidates: Array(shown.values), userId: userId, imageBase64: imageBase64)
         do {
             for try await ev in AgentClient.stream(req) {
                 switch ev {
