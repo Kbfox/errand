@@ -1,17 +1,17 @@
-# Errand — 交接
+# Gofer — 交接
 
 PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`。截止 **2026-11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
 
 ## 结构
 - `worker/` Cloudflare Worker（TypeScript）。`src/paypal.ts` 已封装 OAuth / create order / capture / get / tracking / Vault 参数；`src/channel3.ts` 搜索（端点形状待对照 docs.trychannel3.com 确认）；`src/index.ts` 路由，`/agent` 尚未实现（第 2 周：Claude 工具循环 + SSE）
-- `ios/` XcodeGen 工程。`CheckoutCoordinator` 用 `ASWebAuthenticationSession` 打开 PayPal 审批页，Worker 的 `/paypal/return` 捕获后跳回 `errand://paypal/return`。第 1 周 `ChatView` 只有一个付款按钮用来验证链路
+- `ios/` XcodeGen 工程。`CheckoutCoordinator` 用 `ASWebAuthenticationSession` 打开 PayPal 审批页，Worker 的 `/paypal/return` 捕获后跳回 `gofer://paypal/return`。第 1 周 `ChatView` 只有一个付款按钮用来验证链路
 - 密钥：`worker/.dev.vars`（本地）/ `npm run secrets`（线上）；`ios/Config/Secrets.xcconfig`。均已 gitignore，不要把值贴进对话
 
 ## 命令
 ```
 cd worker && npm install && npm run dev            # 本地 8787
 cd worker && ./scripts/smoke-paypal.sh             # curl 级沙盒下单→审批→capture
-cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Errand -destination 'platform=iOS Simulator,id=FA278CFD-405E-4646-888C-1F36769773E8' -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build
+cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer -destination 'platform=iOS Simulator,id=FA278CFD-405E-4646-888C-1F36769773E8' -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build
 ```
 新增 Swift 文件后必须 `xcodegen generate`。模拟器 iPhone 18 Pro Max `FA278CFD-405E-4646-888C-1F36769773E8`。
 
@@ -31,19 +31,19 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - 沙盒 vault_id / customer id 记在对话里，不入库；真实实现要按用户持久化到 D1
 
 ## 线上环境（2026-10-13 部署）
-- Worker：**https://errand.kbfoxtk.workers.dev**（`cd worker && npm run deploy`）。远程 D1 已迁移（`wrangler d1 migrations apply errand --remote`），4 个 secret 已设（PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / CHANNEL3_API_KEY / APP_KEY，值取自 .dev.vars）。`PUBLIC_BASE_URL` 在 wrangler.toml 指向线上，本地由 .dev.vars 覆盖为 localhost。
+- Worker：**https://gofer.kbfoxtk.workers.dev**（`cd worker && npm run deploy`）。远程 D1 已迁移（`wrangler d1 migrations apply errand --remote`），4 个 secret 已设（PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / CHANNEL3_API_KEY / APP_KEY，值取自 .dev.vars）。`PUBLIC_BASE_URL` 在 wrangler.toml 指向线上，本地由 .dev.vars 覆盖为 localhost。
 - iOS：`API_BASE_URL` 按配置区分，Debug=localhost:8787，Release=线上（project.yml settings.configs）。TestFlight 用 Release。
 - 线上验证：/health ok、Channel3 搜索 ok、/agent 一轮（Workers AI）ok。
 
 ## 进度
 - **10-13 晚：第 2 周目标提前达成**。模拟器里从示例需求 → 3 张候选卡 → 点 Buy → agent 建单 → App 内 PayPal 登录付款 → 跳回 → 绿色收据卡，订单 4SS16439R7402661J COMPLETED $79.97，且 Vault 已存。
-- **10-13 深夜：第 3 周主体完成**。D1（users/rules/orders/watches）、规则引擎 `commerce.decide`、规则内用 vault_id 无人值守付款、盯价 `watch.evaluate`（cron 每 15 分钟 + `/debug/watches/:id/simulate` 强制价格走同一条代码路径）、iOS 三个 Tab（Errand / Orders / Rules）。模拟器实测：Rules 页设 $100/$500 → 聊天里 $76.90 的键盘直接 "Bought for you with PayPal"，订单 93G362961A2581028。
+- **10-13 深夜：第 3 周主体完成**。D1（users/rules/orders/watches）、规则引擎 `commerce.decide`、规则内用 vault_id 无人值守付款、盯价 `watch.evaluate`（cron 每 15 分钟 + `/debug/watches/:id/simulate` 强制价格走同一条代码路径）、iOS 三个 Tab（Gofer / Orders / Rules）。模拟器实测：Rules 页设 $100/$500 → 聊天里 $76.90 的键盘直接 "Bought for you with PayPal"，订单 93G362961A2581028。
 - **安全闸（务必保留）**：`agent.ts` 里 start_checkout / watch_price 有服务端硬条件：同一轮刚 present_candidates 不允许下单；用户最新消息必须含商品 id 或购买动词。起因：只有一个候选时 Llama 跳过提问直接下单并自动扣款了。
-- 本地调试种数据：App 的 userId 在模拟器容器 `Library/Preferences/com.errand.ios.plist` 的 `errand.userId`（用 plistlib 读，plutil 会把点号当路径）；`wrangler d1 execute errand --local --command "UPDATE users SET vault_id=... WHERE id=..."` 可给用户种已保存钱包。
-- **10-13 20:56：第 3 周收口**。iPhone 18 Pro 模拟器（250FDF0D-DF15-4DC0-B569-B17ACF39C22A，Errand 专用，避开另一会话占用的 18 Pro Max）上：Watching 卡 → Simulate price drop → 订单页出现 "Bought on price drop" $63.00 COMPLETED（订单 70S37519TW733264L）。
+- 本地调试种数据：App 的 userId 在模拟器容器 `Library/Preferences/com.gofer.ios.plist` 的 `gofer.userId`（用 plistlib 读，plutil 会把点号当路径）；`wrangler d1 execute errand --local --command "UPDATE users SET vault_id=... WHERE id=..."` 可给用户种已保存钱包。
+- **10-13 20:56：第 3 周收口**。iPhone 18 Pro 模拟器（250FDF0D-DF15-4DC0-B569-B17ACF39C22A，Gofer 专用，避开另一会话占用的 18 Pro Max）上：Watching 卡 → Simulate price drop → 订单页出现 "Bought on price drop" $63.00 COMPLETED（订单 70S37519TW733264L）。
 - 待做（第 4 周）：推送（可选）；物流写入入口；部署 Worker（`wrangler deploy` + `d1 migrations apply errand --remote` + `npm run secrets`）并把 PUBLIC_BASE_URL / App 的 API_BASE_URL 换成线上；TestFlight；视频；README；Devpost。
 - 本地联调：`cd worker && npm run dev` 必须在跑，App 的 `API_BASE_URL` 指向 localhost:8787。
 
 ## 约定
 - 提交者 `-c user.name="Kbfox" -c user.email="52fdcbrgmr@privaterelay.appleid.com"`，trailer `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`
-- 远程 github.com/Kbfox/errand（公开，MIT，规则要求）
+- 远程 github.com/Kbfox/gofer（公开，MIT，规则要求）

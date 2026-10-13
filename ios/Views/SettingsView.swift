@@ -12,14 +12,14 @@ struct SettingsView: View {
                         RoundedRectangle(cornerRadius: 14).fill(Color.accentColor.gradient).frame(width: 56, height: 56)
                             .overlay(Image(systemName: "bag.fill").font(.title2).foregroundStyle(.white))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Errand").font(.headline)
+                            Text("Gofer").font(.headline)
                             Text("Tell it what you need. It finds it, you approve, it pays.").font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                     .padding(.vertical, 4)
                 }
                 Section("How it pays") {
-                    Label("Payments run through PayPal. Errand never sees card numbers.", systemImage: "lock.shield")
+                    Label("Payments run through PayPal. Gofer never sees card numbers.", systemImage: "lock.shield")
                     Label("Purchases inside your rules use your saved PayPal wallet. Everything else opens PayPal for approval.", systemImage: "slider.horizontal.3")
                     Label("This build uses the PayPal sandbox: no real money moves.", systemImage: "testtube.2")
                 }
@@ -31,7 +31,7 @@ struct SettingsView: View {
                     Button("Reset this device", role: .destructive) { confirmReset = true }
                 }
                 Section("About") {
-                    Link(destination: URL(string: "https://github.com/Kbfox/errand")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
+                    Link(destination: URL(string: "https://github.com/Kbfox/gofer")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
                     Text("Built for the PayPal AI Hackathon 2026. Product data by Channel3. Agent runs on Cloudflare Workers AI.")
                         .font(.footnote).foregroundStyle(.secondary)
@@ -41,7 +41,7 @@ struct SettingsView: View {
             .task { me = try? await APIClient.shared.get("/me", as: Me.self) }
             .confirmationDialog("Reset this device?", isPresented: $confirmReset, titleVisibility: .visible) {
                 Button("Forget wallet, rules and history", role: .destructive) {
-                    UserDefaults.standard.removeObject(forKey: "errand.userId")
+                    UserDefaults.standard.removeObject(forKey: "gofer.userId")
                     exit(0)
                 }
             } message: {

@@ -144,10 +144,10 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
 function redirectToApp(env: Env, params: Record<string, string>): Response {
   const q = new URLSearchParams(params).toString();
   const deep = `${env.APP_RETURN_SCHEME}://paypal/return?${q}`;
-  const html = `<!doctype html><meta charset="utf-8"><title>Errand</title>
+  const html = `<!doctype html><meta charset="utf-8"><title>Gofer</title>
 <meta http-equiv="refresh" content="0;url=${deep}">
 <body style="font-family:-apple-system,system-ui;padding:32px;text-align:center">
-<p>Returning to Errand…</p><p><a href="${deep}">Open Errand</a></p>
+<p>Returning to Gofer…</p><p><a href="${deep}">Open Gofer</a></p>
 <pre style="color:#888">${q}</pre></body>`;
   return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
 }

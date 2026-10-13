@@ -1,4 +1,4 @@
-# Errand — Devpost submission kit (PayPal AI Hackathon 2026)
+# Gofer — Devpost submission kit (PayPal AI Hackathon 2026)
 
 Deadline: **Nov 12, 2026 12:00 PT** (Beijing Nov 13 04:00). Target: submit **Nov 10**.
 Submission page: https://paypalaihackathon.devpost.com → Enter a Submission.
@@ -7,38 +7,38 @@ Submission page: https://paypalaihackathon.devpost.com → Enter a Submission.
 
 ## 1. Demo video (≤ 3:00, target 2:30)
 
-Record on the iPhone 18 Pro simulator (Errand-only device `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`), Debug build so the **Simulate price drop** button exists. Fix the clock first: `xcrun simctl status_bar 250FDF0D-DF15-4DC0-B569-B17ACF39C22A override --time 9:41`. Record with `xcrun simctl io <udid> recordVideo --codec h264 ~/Desktop/errand-demo.mov`, trim with ffmpeg. Narration recorded separately (or captions), English.
+Record on the iPhone 18 Pro simulator (Gofer-only device `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`), Debug build so the **Simulate price drop** button exists. Fix the clock first: `xcrun simctl status_bar 250FDF0D-DF15-4DC0-B569-B17ACF39C22A override --time 9:41`. Record with `xcrun simctl io <udid> recordVideo --codec h264 ~/Desktop/errand-demo.mov`, trim with ffmpeg. Narration recorded separately (or captions), English.
 
-Before recording: fresh install (new user id), Rules = Always ask, log in to the PayPal sandbox once in a throwaway run so the ASWebAuthenticationSession "Errand wants to use sandbox.paypal.com" dialog has already been accepted and PayPal cookies exist. Keep the local Worker running.
+Before recording: fresh install (new user id), Rules = Always ask, log in to the PayPal sandbox once in a throwaway run so the ASWebAuthenticationSession "Gofer wants to use sandbox.paypal.com" dialog has already been accepted and PayPal cookies exist. Keep the local Worker running.
 
 | Time | Screen | Narration |
 |---|---|---|
-| 0:00–0:12 | App icon → empty chat | "This is Errand. You tell it what you need. It finds it, you approve, it pays. With PayPal." |
+| 0:00–0:12 | App icon → empty chat | "This is Gofer. You tell it what you need. It finds it, you approve, it pays. With PayPal." |
 | 0:12–0:40 | Tap suggestion "Wired mechanical keyboard, blue switches, under $120" → status line → 3 cards appear | "The agent searches real inventory across retailers through Channel3, checks every result against the hard constraints using structured attributes, not just titles, and shortlists three. Each card says what you give up." |
-| 0:40–1:05 | Tap **Buy with PayPal** on one → PayPal sheet (already signed in) → Pay Now → back in app → green receipt | "You approve the first purchase in PayPal, inside the app. Errand captures the order and, with your consent, saves the wallet for next time." |
+| 0:40–1:05 | Tap **Buy with PayPal** on one → PayPal sheet (already signed in) → Pay Now → back in app → green receipt | "You approve the first purchase in PayPal, inside the app. Gofer captures the order and, with your consent, saves the wallet for next time." |
 | 1:05–1:25 | Rules tab → set *Buy without asking under* $100, cap $500 → Save; show "PayPal wallet: Saved" | "Now the agent gets a budget. These rules live on the server. The model can't talk its way around them." |
-| 1:25–1:50 | Errand tab → "Running shoes for wide feet, size 10, under $90" → tap Buy → receipt "Bought for you with PayPal · No approval needed: within your $100 auto-buy limit" | "Under the limit, Errand charges the saved PayPal wallet directly. No sheet. That's the difference between an assistant that recommends and an agent that transacts." |
-| 1:50–2:20 | Type "Don't buy the X now. Buy it automatically if it drops under $60." → Watching card → Orders tab → Watching row → tap **Simulate price drop** → row becomes order "Bought on price drop" | "Or give it a condition. Errand subscribes to the price and checks it every fifteen minutes. The moment it hits, it buys, still inside your rules. Here I'm forcing the price so you can see the real code path run." |
+| 1:25–1:50 | Gofer tab → "Running shoes for wide feet, size 10, under $90" → tap Buy → receipt "Bought for you with PayPal · No approval needed: within your $100 auto-buy limit" | "Under the limit, Gofer charges the saved PayPal wallet directly. No sheet. That's the difference between an assistant that recommends and an agent that transacts." |
+| 1:50–2:20 | Type "Don't buy the X now. Buy it automatically if it drops under $60." → Watching card → Orders tab → Watching row → tap **Simulate price drop** → row becomes order "Bought on price drop" | "Or give it a condition. Gofer subscribes to the price and checks it every fifteen minutes. The moment it hits, it buys, still inside your rules. Here I'm forcing the price so you can see the real code path run." |
 | 2:20–2:40 | Rules → set limit to $25 → Buy something at $45 → PayPal sheet comes back → receipt "You approved it: over your $25 auto-buy limit" | "Change the rules and the agent asks again. Every purchase shows how it was authorised." |
 | 2:40–2:55 | Orders tab scroll; quick cut to code: `commerce.ts decide()` and the guard in `agent.ts` | "Spending rules and the 'user must choose' guard are enforced server-side. Built solo on SwiftUI, Cloudflare Workers, Workers AI, PayPal Orders v2 and Vault, and Channel3." |
-| 2:55–3:00 | End card: Errand · github.com/Kbfox/errand | |
+| 2:55–3:00 | End card: Gofer · github.com/Kbfox/gofer | |
 
 Shot rules: no third-party music; product images come from Channel3 results (retailer catalogue imagery), keep them small and in context; show the PayPal sandbox banner, do not crop it (judges should see it is sandbox).
 
 ---
 
 ### Recording log (2026-10-13)
-Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Timestamps in the raw file are irregular, so **first transcode to CFR** (`ffmpeg -i raw.mov -vf fps=30,scale=1080:-2 cfr.mp4`) and cut from that; seeking the raw file lands on wrong frames. Cut list on the CFR timeline (seconds): `0-5, 12.5-29, 52.5-63.5, 92.5-127.5, 171-181, 209-223, 239-253, 275.5-282, 299.5-319.5, 334.5-347.5, 353.5-360.5, 367.5-376.5` → `Errand-demo.mp4`, 161 s, 1080×2346, no audio yet. Known soft spots: the first PayPal sheet was barely captured by the recorder (dialog → receipt), the second purchase shows the full PayPal page; the Orders page did not refresh in time after Simulate, the result shows on the final Orders screen. Narration/captions still to add (script above).
+Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Timestamps in the raw file are irregular, so **first transcode to CFR** (`ffmpeg -i raw.mov -vf fps=30,scale=1080:-2 cfr.mp4`) and cut from that; seeking the raw file lands on wrong frames. Cut list on the CFR timeline (seconds): `0-5, 12.5-29, 52.5-63.5, 92.5-127.5, 171-181, 209-223, 239-253, 275.5-282, 299.5-319.5, 334.5-347.5, 353.5-360.5, 367.5-376.5` → `Gofer-demo.mp4`, 161 s, 1080×2346, no audio yet. Known soft spots: the first PayPal sheet was barely captured by the recorder (dialog → receipt), the second purchase shows the full PayPal page; the Orders page did not refresh in time after Simulate, the result shows on the final Orders screen. Narration/captions still to add (script above).
 
 ## 2. Devpost fields
 
-**Project name:** Errand
+**Project name:** Gofer
 
 **Tagline (≤ 60 chars):** Tell it what you need. It finds it, you approve, it pays.
 
 **Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, workers-ai, typescript, paypal, paypal-orders-api, paypal-vault, channel3, llama
 
-**Try it out links:** GitHub `https://github.com/Kbfox/errand` · TestFlight `<link>` · Backend health `https://errand.kbfoxtk.workers.dev/health`
+**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `<link>` · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
 **Video:** `<YouTube link>`
 
@@ -48,16 +48,16 @@ Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Tim
 
 ```markdown
 ## Inspiration
-Every "AI shopping assistant" I tried ends the same way: a list of links and "happy shopping". The hard part isn't finding a keyboard, it's the last step: deciding and paying, and doing it again next month without me babysitting it. PayPal's prompt for this hackathon said it plainly: *not just recommend, but actually transact*. Errand is my answer to that sentence.
+Every "AI shopping assistant" I tried ends the same way: a list of links and "happy shopping". The hard part isn't finding a keyboard, it's the last step: deciding and paying, and doing it again next month without me babysitting it. PayPal's prompt for this hackathon said it plainly: *not just recommend, but actually transact*. Gofer is my answer to that sentence.
 
 ## What it does
-Errand is an iPhone agent that buys things for you with PayPal.
+Gofer is an iPhone agent that buys things for you with PayPal.
 
 - **Say what you need.** "Wired mechanical keyboard, blue switches, under $120."
 - **It finds it.** Real inventory across retailers via Channel3. Every result is checked against your hard constraints using structured attributes (switch type, connectivity, size…), not just the title. You get three candidates, each with a one-line trade-off.
-- **You approve, it pays.** Tap *Buy with PayPal*; the PayPal sheet opens inside the app. Errand creates and captures the order (PayPal Orders v2) and, with your consent, vaults your wallet.
-- **Then it buys on its own, within rules you set.** *Buy without asking under $100, monthly cap $500.* Inside those limits Errand charges your saved PayPal wallet with no sheet. Outside them, PayPal asks you.
-- **Watch a price.** "Buy it automatically if it drops under $60." A cron re-checks the live price; when it hits, Errand buys unattended, still inside your rules. If the rules say no, the watch is parked for a one-tap approval.
+- **You approve, it pays.** Tap *Buy with PayPal*; the PayPal sheet opens inside the app. Gofer creates and captures the order (PayPal Orders v2) and, with your consent, vaults your wallet.
+- **Then it buys on its own, within rules you set.** *Buy without asking under $100, monthly cap $500.* Inside those limits Gofer charges your saved PayPal wallet with no sheet. Outside them, PayPal asks you.
+- **Watch a price.** "Buy it automatically if it drops under $60." A cron re-checks the live price; when it hits, Gofer buys unattended, still inside your rules. If the rules say no, the watch is parked for a one-tap approval.
 - **Every order shows how it was authorised**: approved in PayPal, bought automatically, or bought on price drop, plus shipment tracking.
 
 ## How we built it
@@ -79,8 +79,8 @@ A real end-to-end loop on a phone: natural-language request → verified candida
 ## What we learned
 Agentic commerce is 20% model and 80% guardrails, consent and receipts. The product that earns trust is the one that can explain, for every dollar, who authorised it and under which rule.
 
-## What's next for Errand
-Push notifications for unattended buys, PayPal webhooks for order state, multi-quantity and variants (size/colour), shared household rules, and a PayPal Agent Toolkit / MCP surface so other agents can hand Errand a shopping task.
+## What's next for Gofer
+Push notifications for unattended buys, PayPal webhooks for order state, multi-quantity and variants (size/colour), shared household rules, and a PayPal Agent Toolkit / MCP surface so other agents can hand Gofer a shopping task.
 ```
 
 ### Product feedback (if the form asks)

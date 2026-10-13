@@ -1,5 +1,5 @@
 {
-  "name": "errand-worker",
+  "name": "gofer-worker",
   "private": true,
   "type": "module",
   "scripts": {

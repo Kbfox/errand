@@ -83,7 +83,7 @@ export async function createOrder(env: Env, input: CreateOrderInput): Promise<Pa
     ? { vault_id: input.vaultId }
     : {
         experience_context: {
-          brand_name: "Errand",
+          brand_name: "Gofer",
           locale: "en-US",
           user_action: "PAY_NOW",
           shipping_preference: "NO_SHIPPING",
@@ -124,7 +124,7 @@ export function approveLink(order: PayPalOrder): string | undefined {
 
 // Orders v2 tracking (verified in sandbox 2026-10-13). The older /v1/shipping/trackers-batch
 // returns 403 NOT_AUTHORIZED for a default sandbox app, so use this one.
-export async function addTracking(env: Env, orderId: string, captureId: string, trackingNumber: string, carrier = "OTHER", carrierNameOther = "Errand courier", notify = true) {
+export async function addTracking(env: Env, orderId: string, captureId: string, trackingNumber: string, carrier = "OTHER", carrierNameOther = "Gofer courier", notify = true) {
   return pp(env, "POST", `/v2/checkout/orders/${orderId}/track`, {
     capture_id: captureId,
     tracking_number: trackingNumber,

@@ -11,8 +11,8 @@ echo "oauth ok"
 
 ORDER=$(curl -s -X POST $BASE/v2/checkout/orders \
   -H "authorization: Bearer $TOKEN" -H "content-type: application/json" -H "PayPal-Request-Id: $(uuidgen)" \
-  -d '{"intent":"CAPTURE","purchase_units":[{"reference_id":"smoke-1","amount":{"currency_code":"USD","value":"12.34","breakdown":{"item_total":{"currency_code":"USD","value":"12.34"}}},"items":[{"name":"Errand smoke test","unit_amount":{"currency_code":"USD","value":"12.34"},"quantity":"1"}]}],
-       "payment_source":{"paypal":{"experience_context":{"brand_name":"Errand","user_action":"PAY_NOW","shipping_preference":"NO_SHIPPING","return_url":"https://example.com/return","cancel_url":"https://example.com/cancel"}}}}')
+  -d '{"intent":"CAPTURE","purchase_units":[{"reference_id":"smoke-1","amount":{"currency_code":"USD","value":"12.34","breakdown":{"item_total":{"currency_code":"USD","value":"12.34"}}},"items":[{"name":"Gofer smoke test","unit_amount":{"currency_code":"USD","value":"12.34"},"quantity":"1"}]}],
+       "payment_source":{"paypal":{"experience_context":{"brand_name":"Gofer","user_action":"PAY_NOW","shipping_preference":"NO_SHIPPING","return_url":"https://example.com/return","cancel_url":"https://example.com/cancel"}}}}')
 ID=$(echo "$ORDER" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d["id"])')
 APPROVE=$(echo "$ORDER" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(next(l["href"] for l in d["links"] if l["rel"] in ("payer-action","approve")))')
 echo "order $ID created"

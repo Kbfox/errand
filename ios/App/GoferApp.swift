@@ -1,13 +1,13 @@
 import SwiftUI
 
 @main
-struct ErrandApp: App {
+struct GoferApp: App {
     @State private var checkout = CheckoutCoordinator()
 
     var body: some Scene {
         WindowGroup {
             TabView {
-                ChatView().tabItem { Label("Errand", systemImage: "bubble.left.and.text.bubble.right.fill") }
+                ChatView().tabItem { Label("Gofer", systemImage: "bubble.left.and.text.bubble.right.fill") }
                 OrdersView().tabItem { Label("Orders", systemImage: "shippingbox.fill") }
                 RulesView().tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
                 SettingsView().tabItem { Label("Settings", systemImage: "gearshape.fill") }

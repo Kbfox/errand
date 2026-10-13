@@ -4,7 +4,7 @@ struct APIClient {
     static let shared = APIClient()
 
     static let userId: String = {
-        let k = "errand.userId"
+        let k = "gofer.userId"
         if let v = UserDefaults.standard.string(forKey: k) { return v }
         let v = UUID().uuidString; UserDefaults.standard.set(v, forKey: k); return v
     }()

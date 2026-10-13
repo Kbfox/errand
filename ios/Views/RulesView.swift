@@ -22,8 +22,8 @@ struct RulesView: View {
                     }
                 } footer: {
                     Text(me?.walletSaved == true
-                         ? "Errand can pay with your saved PayPal wallet without opening PayPal, as long as the purchase fits the rules below."
-                         : "Approve one purchase in PayPal and Errand will save the wallet for unattended buys that fit your rules.")
+                         ? "Gofer can pay with your saved PayPal wallet without opening PayPal, as long as the purchase fits the rules below."
+                         : "Approve one purchase in PayPal and Gofer will save the wallet for unattended buys that fit your rules.")
                 }
 
                 Section {

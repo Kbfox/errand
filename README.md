@@ -1,13 +1,13 @@
-# Errand
+# Gofer
 
 > **Tell it what you need. It finds it, you approve, it pays.**
 
-Errand is an iPhone shopping agent built for the **PayPal AI Hackathon 2026**. You describe what you want in plain language. The agent searches real products across retailers, explains the trade-offs, and pays with PayPal. Set spending rules once and it can buy on your behalf without asking: within your limits, or the moment a price you are watching drops.
+Gofer is an iPhone shopping agent built for the **PayPal AI Hackathon 2026**. You describe what you want in plain language. The agent searches real products across retailers, explains the trade-offs, and pays with PayPal. Set spending rules once and it can buy on your behalf without asking: within your limits, or the moment a price you are watching drops.
 
 It does not recommend and stop. It transacts.
 
 <!-- demo video: add YouTube link before submission -->
-**Demo video:** _coming in week 4_ · **TestFlight:** _coming in week 4_ · **Backend:** https://errand.kbfoxtk.workers.dev/health
+**Demo video:** _coming in week 4_ · **TestFlight:** _coming in week 4_ · **Backend:** https://gofer.kbfoxtk.workers.dev/health
 
 ---
 
@@ -18,8 +18,8 @@ It does not recommend and stop. It transacts.
 | 1. Say what you need | "Wired mechanical keyboard, blue switches, under $120" | |
 | 2. Agent finds it | Searches real inventory across retailers, checks each result against your hard constraints using structured attributes, shortlists 3 with a one-line trade-off each | Channel3 `POST /v1/search` |
 | 3. You approve | Tap **Buy with PayPal**. The PayPal sheet opens inside the app; you pay with your PayPal account | Orders v2 `create` → `capture`, wallet vaulted with `store_in_vault: ON_SUCCESS` |
-| 4. Next time it just buys | Under your auto-buy limit and monthly cap, Errand charges your saved PayPal wallet with no sheet | Orders v2 with `payment_source.paypal.vault_id` (auto-captured) |
-| 5. Watch a price | "Buy it automatically if it drops under $60." A cron re-checks the price; when it hits, Errand buys unattended, still inside your rules | Channel3 `GET /v1/products/{id}` + price tracking, Orders v2 vault charge |
+| 4. Next time it just buys | Under your auto-buy limit and monthly cap, Gofer charges your saved PayPal wallet with no sheet | Orders v2 with `payment_source.paypal.vault_id` (auto-captured) |
+| 5. Watch a price | "Buy it automatically if it drops under $60." A cron re-checks the price; when it hits, Gofer buys unattended, still inside your rules | Channel3 `GET /v1/products/{id}` + price tracking, Orders v2 vault charge |
 | 6. Track it | Orders tab shows every purchase, how it was authorised, and shipment status | Orders v2 `/track` |
 
 ### Spending rules are enforced by the server, not the model
@@ -47,13 +47,13 @@ Independently of the prompt, the agent loop refuses `start_checkout` unless the 
 ```
 iPhone app (SwiftUI, iOS 17+)                 Cloudflare Worker (TypeScript)
 ┌──────────────────────────────┐              ┌──────────────────────────────────────────┐
-│ Errand tab   chat + cards    │  POST /agent │ agent.ts   tool loop on Workers AI        │
+│ Gofer tab   chat + cards    │  POST /agent │ agent.ts   tool loop on Workers AI        │
 │ Orders tab   orders, watches │ ───(SSE)───▶ │   search_products → Channel3              │
 │ Rules tab    limits, wallet  │              │   present_candidates (filtered, ≤3)       │
 │                              │ ◀─────────── │   start_checkout  → commerce.buy()        │
 │ CheckoutCoordinator          │   events     │   watch_price     → watches table         │
 │   ASWebAuthenticationSession │              │ commerce.ts  rules → vault charge | sheet │
-│   errand://paypal/return     │              │ watch.ts     cron */15 + simulate         │
+│   gofer://paypal/return     │              │ watch.ts     cron */15 + simulate         │
 └──────────────────────────────┘              │ paypal.ts    OAuth, orders, capture, track│
                                               │ channel3.ts  search, detail, tracking     │
                                               │ D1: users · rules · orders · watches      │
@@ -66,7 +66,7 @@ iPhone app (SwiftUI, iOS 17+)                 Cloudflare Worker (TypeScript)
 
 - **LLM:** Cloudflare Workers AI by default (no API key, free tier). `src/llm.ts` is provider-agnostic; set `LLM_PROVIDER=openai-compatible` with `LLM_BASE_URL` and a `LLM_API_KEY` secret to use DeepSeek, OpenAI, Qwen or any compatible endpoint.
 - **Agent events** (`status`, `candidates`, `message`, `checkout`, `purchased`, `watching`, `error`, `done`) stream over server-sent events so the UI updates as the agent works.
-- **Merchant model:** in the sandbox, Errand itself is the merchant (the PayPal business sandbox account receives the money). Product discovery and buy links come from Channel3; Errand charges the user through PayPal and records the order.
+- **Merchant model:** in the sandbox, Gofer itself is the merchant (the PayPal business sandbox account receives the money). Product discovery and buy links come from Channel3; Gofer charges the user through PayPal and records the order.
 
 ---
 
@@ -96,7 +96,7 @@ Smoke-test PayPal without the app (create order → approve in a browser → cap
 cd ios
 cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig   # APP_KEY must match the worker's; set your DEVELOPMENT_TEAM
 xcodegen generate
-open Errand.xcodeproj                 # run the Errand scheme on a simulator
+open Gofer.xcodeproj                 # run the Gofer scheme on a simulator
 ```
 
 Debug builds talk to `http://localhost:8787`; Release builds talk to the deployed Worker (see `ios/project.yml`).
@@ -111,13 +111,13 @@ npm run secrets                       # PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, 
 npm run deploy
 ```
 
-Set `PUBLIC_BASE_URL` in `wrangler.toml` to the deployed URL: PayPal redirects there after approval, and the Worker bounces back into the app via `errand://paypal/return`.
+Set `PUBLIC_BASE_URL` in `wrangler.toml` to the deployed URL: PayPal redirects there after approval, and the Worker bounces back into the app via `gofer://paypal/return`.
 
 ---
 
 ## Testing guide for judges
 
-1. **Pay with PayPal:** pick a suggestion on the Errand tab, tap **Buy with PayPal** on a card, sign in with a PayPal **sandbox personal** account, tap Pay Now. You land back in the app with a green receipt. Your sandbox wallet is now saved.
+1. **Pay with PayPal:** pick a suggestion on the Gofer tab, tap **Buy with PayPal** on a card, sign in with a PayPal **sandbox personal** account, tap Pay Now. You land back in the app with a green receipt. Your sandbox wallet is now saved.
 2. **Let it buy for you:** Rules tab → *Buy without asking under* **$100** → Save. Ask for something else and tap Buy: the receipt says *Bought for you with PayPal*, no sheet.
 3. **Watch a price:** in the chat, type *"Don't buy it now, buy it automatically if it drops under $60"* about a shown product. Orders tab → *Watching*. In a Debug build tap **Simulate price drop**: the real evaluation runs with the price forced to your target and the order appears as *Bought on price drop*. (In production the cron checks every 15 minutes against live prices.)
 4. **See the rules bite:** set the limit to **$25** and try again: the PayPal sheet comes back, and the receipt explains why.
@@ -141,7 +141,7 @@ worker/
   migrations/       schema
   scripts/          smoke-paypal.sh
 ios/
-  App/              ErrandApp (3 tabs), AppConfig
+  App/              GoferApp (3 tabs), AppConfig
   Views/            ChatView (cards, receipts), OrdersView, RulesView
   Services/         AgentClient (SSE), APIClient, ChatModel, CheckoutCoordinator (ASWebAuthenticationSession)
   Models/           Candidate, AgentEvent, Order, Watch, Rules

@@ -17,7 +17,7 @@ final class ChatModel {
         "Running shoes for wide feet, size 10, under $90",
         "A 1 L insulated water bottle that fits a car cup holder",
     ]
-    static let watchHint = "Tip: say \"buy it if it drops under $60\" and Errand will watch the price."
+    static let watchHint = "Tip: say \"buy it if it drops under $60\" and Gofer will watch the price."
 
     func send(_ text: String, checkout: CheckoutCoordinator) {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -33,7 +33,7 @@ struct ChatView: View {
                 }
                 inputBar
             }
-            .navigationTitle("Errand")
+            .navigationTitle("Gofer")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(.systemGroupedBackground))
         }
@@ -224,7 +224,7 @@ struct WatchingCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Watching the price", systemImage: "eye.fill").font(.headline).foregroundStyle(.orange)
             Text(candidate.title).font(.subheadline)
-            Text("Now \(candidate.priceText). Errand will buy it the moment it is \(Candidate.money(targetPrice, candidate.currency)) or less, within your rules.")
+            Text("Now \(candidate.priceText). Gofer will buy it the moment it is \(Candidate.money(targetPrice, candidate.currency)) or less, within your rules.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
         .padding(12)

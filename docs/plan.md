@@ -1,16 +1,16 @@
-# Errand — PayPal AI Hackathon 产品定义与排期
+# Gofer — PayPal AI Hackathon 产品定义与排期
 
-> 工作名 **Errand**（跑腿）。一句话："Tell it what you need. It finds it, you approve, it pays."
+> 工作名 **Gofer**（跑腿）。一句话："Tell it what you need. It finds it, you approve, it pays."
 > 赛事：PayPal AI Hackathon（https://paypalaihackathon.devpost.com），截止 **2026-11-12 12:00 PT = 北京 11-13 04:00**。
-> 本文件先放在 MustPlay 仓库，项目启动后迁到新仓库 `Kbfox/errand`。
+> 本文件先放在 MustPlay 仓库，项目启动后迁到新仓库 `Kbfox/gofer`。
 
 ---
 
 ## 1. 为什么是这个方向
 
-评委给的五类灵感里，第一类"AI Agents or Automation"原话是：**"not just recommend, but actually transact. Think: an AI agent that shops and checks out for you."** 这就是 Errand。奖项上它同时覆盖：
+评委给的五类灵感里，第一类"AI Agents or Automation"原话是：**"not just recommend, but actually transact. Think: an AI agent that shops and checks out for you."** 这就是 Gofer。奖项上它同时覆盖：
 
-| 奖项 | 金额 | Errand 怎么打 |
+| 奖项 | 金额 | Gofer 怎么打 |
 |---|---|---|
 | Grand Prize 1/2/3 | $12k / $8k / $5k | 完整产品体验 + 真实沙盒交易 |
 | Best Use of Agentic Commerce | $5k | agent 在预算规则内自主下单，不只是推荐 |
@@ -37,7 +37,7 @@
 - **盯价代买**：对一个候选说"低于 $150 就买"。后端定时重查 Channel3 价格，命中后用 **PayPal Vault**（已保存的付款方式，`payment_source.paypal.vault_id`）发起无人值守付款并推送通知。沙盒里 Vault 需要先走一次带 `vault.store_in_vault=ON_SUCCESS` 的结账，第 1 周先验证可行；不可行则降级为"命中后推送一键批准"。
 
 ### 明确不做
-- 不做真实商户对接：沙盒里 Errand 自己就是商户（business 沙盒账号收款），描述里写清楚。
+- 不做真实商户对接：沙盒里 Gofer 自己就是商户（business 沙盒账号收款），描述里写清楚。
 - 不做账号体系：单设备，Keychain 存一个匿名用户 ID。
 - 不做 Android / Web。
 - 不做退货、争议。

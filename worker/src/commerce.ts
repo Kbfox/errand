@@ -1,4 +1,4 @@
-// The part that makes Errand an agent rather than a chat front-end for a cart:
+// The part that makes Gofer an agent rather than a chat front-end for a cart:
 // server-side spending rules decide whether a purchase happens unattended (vaulted PayPal wallet)
 // or needs the user's approval in the PayPal sheet. The LLM never gets to skip this.
 import { Env } from "./env";

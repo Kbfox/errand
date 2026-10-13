@@ -1,6 +1,6 @@
-name: Errand
+name: Gofer
 options:
-  bundleIdPrefix: com.errand
+  bundleIdPrefix: com.gofer
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -15,7 +15,7 @@ settings:
     Debug:
       API_BASE_URL: http://localhost:8787          # wrangler dev
     Release:
-      API_BASE_URL: https://errand.kbfoxtk.workers.dev
+      API_BASE_URL: https://gofer.kbfoxtk.workers.dev
   base:
     SWIFT_VERSION: "5"
     DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
@@ -23,22 +23,22 @@ settings:
     MARKETING_VERSION: 0.1.0
     TARGETED_DEVICE_FAMILY: "1"
 targets:
-  Errand:
+  Gofer:
     type: application
     platform: iOS
     sources: [App, Views, Services, Models]
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: Errand
+        CFBundleDisplayName: Gofer
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
         API_BASE_URL: $(API_BASE_URL)
         APP_KEY: $(APP_KEY)
         CFBundleURLTypes:
-          - CFBundleURLName: com.errand.ios
-            CFBundleURLSchemes: [errand]
+          - CFBundleURLName: com.gofer.ios
+            CFBundleURLSchemes: [gofer]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.errand.ios
+        PRODUCT_BUNDLE_IDENTIFIER: com.gofer.ios
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait

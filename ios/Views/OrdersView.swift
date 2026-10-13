@@ -47,7 +47,7 @@ struct OrdersView: View {
                 }
                 if orders.isEmpty {
                     Section {
-                        ContentUnavailableView("No orders yet", systemImage: "shippingbox", description: Text("Ask Errand for something on the first tab. Every purchase, and how it was authorised, shows up here."))
+                        ContentUnavailableView("No orders yet", systemImage: "shippingbox", description: Text("Ask Gofer for something on the first tab. Every purchase, and how it was authorised, shows up here."))
                     }
                 } else {
                     Section {
