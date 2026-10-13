@@ -17,6 +17,15 @@ struct Candidate: Codable, Identifiable, Hashable {
     var reason: String?
 
     var priceText: String { Self.money(price, currency) }
+
+    /// Short, human attribute chips drawn from Channel3 structured attributes.
+    var chips: [String] {
+        let preferred = ["keyboard-switch-type", "connectivity", "power-source", "keyboard-format", "keyboard-layout", "color", "size", "width", "material", "upper-material", "capacity", "volume", "fit"]
+        var out: [String] = []
+        for k in preferred { if let v = attributes[k], !v.isEmpty { out.append(v) } }
+        for (k, v) in attributes.sorted(by: { $0.key < $1.key }) where !preferred.contains(k) && out.count < 5 && v.count <= 18 { out.append(v) }
+        return Array(out.map { $0.split(separator: ",").first.map(String.init) ?? $0 }.prefix(4))
+    }
     var compareAtText: String? { compareAt.map { Self.money($0, currency) } }
 
     static func money(_ v: Double, _ c: String) -> String {

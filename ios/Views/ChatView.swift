@@ -48,6 +48,12 @@ struct ChatView: View {
             HStack { Bubble(text: text, mine: false); Spacer(minLength: 48) }
         case let .candidates(_, items):
             VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkle.magnifyingglass").foregroundStyle(.tint)
+                    Text(items.count == 1 ? "Best match, checked against what you asked for" : "Top \(items.count), checked against what you asked for")
+                        .font(.footnote.weight(.medium)).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 4)
                 ForEach(items) { c in
                     CandidateCard(candidate: c, disabled: model.busy) { focused = false; model.pick(c, checkout: checkout) }
                 }
@@ -145,6 +151,17 @@ struct CandidateCard: View {
                     Text(candidate.store).font(.caption).foregroundStyle(.secondary)
                 }
             }
+            if !candidate.chips.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(candidate.chips, id: \.self) { chip in
+                            Text(chip).font(.caption2.weight(.medium))
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(Color(.tertiarySystemFill), in: Capsule())
+                        }
+                    }
+                }
+            }
             if let r = candidate.reason {
                 Text(r).font(.footnote).foregroundStyle(.secondary)
             }
@@ -162,6 +179,7 @@ struct CandidateCard: View {
 struct ReceiptCard: View {
     let candidate: Candidate; let orderId: String; let status: String
     var auto: Bool = false; var reason: String = ""
+    @State private var expanded = false
     var ok: Bool { status == "COMPLETED" }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -172,10 +190,30 @@ struct ReceiptCard: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
             Text(candidate.title).font(.subheadline)
-            HStack { Text(candidate.priceText).font(.subheadline.weight(.semibold)); Spacer(); Text(orderId).font(.caption.monospaced()).foregroundStyle(.secondary) }
+            HStack {
+                Text(candidate.priceText).font(.subheadline.weight(.semibold))
+                Spacer()
+                Button { withAnimation(.snappy) { expanded.toggle() } } label: {
+                    Label("Details", systemImage: expanded ? "chevron.up" : "chevron.down").font(.caption).labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(.borderless)
+            }
+            if expanded {
+                Divider()
+                detail("PayPal order", orderId)
+                detail("Store", candidate.store)
+                detail("Authorised by", auto ? "Your spending rules" : "You, in PayPal")
+                detail("Environment", "PayPal sandbox")
+                if let url = URL(string: candidate.buyUrl) {
+                    Link(destination: url) { Label("View product page", systemImage: "arrow.up.right.square").font(.caption) }
+                }
+            }
         }
         .padding(12)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+    private func detail(_ k: String, _ v: String) -> some View {
+        HStack(alignment: .firstTextBaseline) { Text(k).font(.caption).foregroundStyle(.secondary); Spacer(); Text(v).font(.caption.monospaced()).multilineTextAlignment(.trailing) }
     }
 }
 

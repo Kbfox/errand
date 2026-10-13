@@ -6,6 +6,34 @@ struct OrdersView: View {
     @State private var watches: [Watch] = []
     @State private var error: String?
     @State private var busyId: String?
+    @State private var filter: Filter = .all
+
+    enum Filter: String, CaseIterable, Identifiable {
+        case all = "All", approved = "Approved", auto = "Automatic", watch = "Price drop"
+        var id: String { rawValue }
+        func matches(_ o: Order) -> Bool {
+            switch self { case .all: return true; case .approved: return o.mode == "approved"; case .auto: return o.mode == "auto"; case .watch: return o.mode == "watch" }
+        }
+    }
+
+    private var grouped: [(String, [Order])] {
+        let parse: (String) -> Date? = { str in
+            let df = DateFormatter(); df.locale = Locale(identifier: "en_US_POSIX"); df.timeZone = TimeZone(identifier: "UTC"); df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            return df.date(from: str)
+        }
+        let rows = orders.filter(filter.matches)
+        let dict = Dictionary(grouping: rows) { o -> String in
+            guard let d = parse(o.created_at) else { return "Earlier" }
+            if Calendar.current.isDateInToday(d) { return "Today" }
+            if Calendar.current.isDateInYesterday(d) { return "Yesterday" }
+            return d.formatted(.dateTime.month(.wide).day())
+        }
+        let order = ["Today", "Yesterday"]
+        return dict.sorted { a, b in
+            let ia = order.firstIndex(of: a.key) ?? 99, ib = order.firstIndex(of: b.key) ?? 99
+            return ia != ib ? ia < ib : a.key > b.key
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,8 +45,20 @@ struct OrdersView: View {
                         ForEach(active) { w in WatchRow(watch: w, busy: busyId == w.id, approve: { approve(w) }, cancel: { cancel(w) }, simulate: { simulate(w) }) }
                     }
                 }
-                Section(orders.isEmpty ? "No orders yet" : "Orders") {
-                    ForEach(orders) { o in OrderRow(order: o) }
+                if orders.isEmpty {
+                    Section {
+                        ContentUnavailableView("No orders yet", systemImage: "shippingbox", description: Text("Ask Errand for something on the first tab. Every purchase, and how it was authorised, shows up here."))
+                    }
+                } else {
+                    Section {
+                        Picker("Filter", selection: $filter) { ForEach(Filter.allCases) { Text($0.rawValue).tag($0) } }
+                            .pickerStyle(.segmented)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                    }
+                    ForEach(grouped, id: \.0) { title, rows in
+                        Section(title) { ForEach(rows) { o in OrderRow(order: o) } }
+                    }
                 }
             }
             .navigationTitle("Orders")

@@ -10,6 +10,7 @@ struct ErrandApp: App {
                 ChatView().tabItem { Label("Errand", systemImage: "bubble.left.and.text.bubble.right.fill") }
                 OrdersView().tabItem { Label("Orders", systemImage: "shippingbox.fill") }
                 RulesView().tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
+                SettingsView().tabItem { Label("Settings", systemImage: "gearshape.fill") }
             }
             .environment(checkout)
             .onOpenURL { url in checkout.handle(url) }
