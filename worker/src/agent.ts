@@ -69,7 +69,8 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
   const messages: llm.Message[] = [{ role: "system", content: SYSTEM }, ...req.messages.map((m) => ({ role: m.role, content: m.content }) as llm.Message)];
   if (known.size) messages.splice(1, 0, { role: "system", content: `Products currently shown to the user (id: title, price): ` + [...known.values()].map((c) => `${c.id}: ${c.title} $${c.price}`).join("; ") });
 
-  for (let step = 0; step < 6; step++) {
+  let checkoutStarted = false;
+  for (let step = 0; step < 6 && !checkoutStarted; step++) {
     const res = await llm.chat(env, messages, TOOLS);
     if (!res.toolCalls.length) {
       if (res.content.trim()) await emit({ type: "message", text: res.content.trim() });
@@ -88,8 +89,9 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
             limit: a.limit ?? 8,
             filters: { availability: ["InStock"], ...(a.max_price || a.min_price ? { price: { max_price: a.max_price, min_price: a.min_price } } : {}) },
           }, req.userId);
+          found.sort((a, b) => a.price - b.price);
           for (const c of found) known.set(c.id, c);
-          result = found.map(({ buyUrl, image, ...rest }) => rest); // keep the prompt small
+          result = { note: "sorted by price ascending; verify constraints using attributes/features", products: found.map(({ buyUrl, image, ...rest }) => rest) };
         } else if (call.name === "present_candidates") {
           const picks = ((call.arguments as any).picks ?? []) as { id: string; reason: string }[];
           const items = picks.map((p) => known.get(p.id)).filter((c): c is channel3.Candidate => !!c).slice(0, 3)
@@ -109,6 +111,7 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           if (!approveUrl) throw new Error("no approve link");
           await emit({ type: "checkout", orderId: order.id, approveUrl, candidate: c });
           result = { orderId: order.id, status: order.status };
+          checkoutStarted = true; // the app takes over from here; never create a second order in the same turn
         } else {
           result = { error: `unknown tool ${call.name}` };
         }
@@ -117,7 +120,8 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
         await emit({ type: "error", text: String(e) });
       }
       messages.push({ role: "tool", tool_call_id: call.id, name: call.name, content: JSON.stringify(result).slice(0, 12000) });
+      if (checkoutStarted) break;
     }
   }
-  await emit({ type: "message", text: "I got stuck. Try rephrasing what you need." });
+  if (!checkoutStarted) await emit({ type: "message", text: "I got stuck. Try rephrasing what you need." });
 }
