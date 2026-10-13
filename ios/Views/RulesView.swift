@@ -15,10 +15,16 @@ struct RulesView: View {
         NavigationStack {
             Form {
                 Section {
-                    HStack {
-                        Label("PayPal wallet", systemImage: "wallet.pass.fill")
+                    HStack(spacing: 12) {
+                        RoundedRectangle(cornerRadius: 8).fill(Color(red: 0, green: 0.19, blue: 0.53)).frame(width: 36, height: 36)
+                            .overlay(Text("P").font(.headline.bold()).foregroundStyle(.white))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("PayPal wallet").font(.body)
+                            Text(me?.walletSaved == true ? "Saved for unattended purchases" : "Approve one purchase to save it").font(.caption).foregroundStyle(.secondary)
+                        }
                         Spacer()
-                        Text(me?.walletSaved == true ? "Saved" : "Not saved yet").foregroundStyle(me?.walletSaved == true ? .green : .secondary)
+                        Image(systemName: me?.walletSaved == true ? "checkmark.circle.fill" : "circle.dashed")
+                            .foregroundStyle(me?.walletSaved == true ? .green : .secondary)
                     }
                 } footer: {
                     Text(me?.walletSaved == true
@@ -41,9 +47,14 @@ struct RulesView: View {
 
                 if let me {
                     Section("This month") {
-                        HStack { Text("Spent"); Spacer(); Text(Candidate.money(me.monthSpent, "USD")) }
+                        HStack { Text("Spent"); Spacer(); Text(Candidate.money(me.monthSpent, "USD")).font(.body.weight(.semibold)) }
                         if me.rules.monthly_cap_usd > 0 {
-                            ProgressView(value: min(me.monthSpent / me.rules.monthly_cap_usd, 1))
+                            let frac = min(me.monthSpent / me.rules.monthly_cap_usd, 1)
+                            VStack(alignment: .leading, spacing: 6) {
+                                ProgressView(value: frac).tint(frac > 0.85 ? .red : frac > 0.6 ? .orange : .accentColor)
+                                Text("\(Candidate.money(max(me.rules.monthly_cap_usd - me.monthSpent, 0), "USD")) left of your \(Candidate.money(me.rules.monthly_cap_usd, "USD")) cap")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }

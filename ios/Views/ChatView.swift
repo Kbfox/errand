@@ -74,7 +74,7 @@ struct ChatView: View {
                 .lineLimit(1...4)
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20))
+                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
                 .focused($focused)
                 .onSubmit(submit)
             Button(action: submit) {
@@ -96,22 +96,49 @@ struct ChatView: View {
 private struct EmptyState: View {
     let tap: (String) -> Void
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Image(systemName: "bag.badge.questionmark").font(.system(size: 44)).foregroundStyle(.tint)
-            Text("Tell it what you need.\nIt finds it, you approve, it pays.")
-                .font(.title3.weight(.semibold))
-            Text(ChatModel.watchHint).font(.footnote).foregroundStyle(.secondary)
-            Text("Try one:").font(.footnote).foregroundStyle(.secondary)
-            ForEach(ChatModel.suggestions, id: \.self) { s in
-                Button { tap(s) } label: {
-                    Text(s).multilineTextAlignment(.leading)
-                        .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+        VStack(alignment: .leading, spacing: 22) {
+            HStack(spacing: 14) {
+                RoundedRectangle(cornerRadius: 16).fill(Color.accentColor.gradient).frame(width: 64, height: 64)
+                    .overlay(Image(systemName: "bag.fill").font(.title).foregroundStyle(.white))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Gofer").font(.title.bold())
+                    Text("Your shopping gofer.").font(.subheadline).foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                step("1", "Tell it what you need", "Plain words. Price caps and must-haves included.")
+                step("2", "It finds it", "Real products across retailers, checked against what you asked for.")
+                step("3", "You approve, it pays", "PayPal inside the app. Set rules and it buys for you next time.")
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+            Text("Try one").font(.footnote.weight(.semibold)).foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                ForEach(ChatModel.suggestions, id: \.self) { s in
+                    Button { tap(s) } label: {
+                        HStack {
+                            Text(s).multilineTextAlignment(.leading).foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "arrow.up.right").font(.caption).foregroundStyle(.tertiary)
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 12)
+                        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text(ChatModel.watchHint).font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(.top, 12)
+    }
+    private func step(_ n: String, _ title: String, _ body: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(n).font(.caption.bold()).frame(width: 22, height: 22).background(Color.accentColor, in: Circle()).foregroundStyle(.white)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.subheadline.weight(.semibold))
+                Text(body).font(.caption).foregroundStyle(.secondary)
             }
         }
-        .padding(.top, 32)
     }
 }
 
@@ -120,7 +147,7 @@ private struct Bubble: View {
     var body: some View {
         Text(text)
             .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(mine ? Color.accentColor : Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
+            .background(mine ? Color.accentColor : Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18))
             .foregroundStyle(mine ? .white : .primary)
     }
 }
@@ -172,7 +199,7 @@ struct CandidateCard: View {
             .disabled(disabled)
         }
         .padding(12)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -210,7 +237,7 @@ struct ReceiptCard: View {
             }
         }
         .padding(12)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
     private func detail(_ k: String, _ v: String) -> some View {
         HStack(alignment: .firstTextBaseline) { Text(k).font(.caption).foregroundStyle(.secondary); Spacer(); Text(v).font(.caption.monospaced()).multilineTextAlignment(.trailing) }
@@ -228,6 +255,6 @@ struct WatchingCard: View {
                 .font(.footnote).foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
 }
