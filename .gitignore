@@ -1,0 +1,12 @@
+# secrets
+worker/.dev.vars
+ios/Config/Secrets.xcconfig
+# build
+build/
+ios/build/
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+node_modules/
+.wrangler/
+.DS_Store

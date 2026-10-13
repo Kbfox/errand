@@ -1,0 +1,9 @@
+# Copy to .dev.vars (gitignored). Values from developer.paypal.com → Apps & Credentials → Sandbox
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+# trychannel3.com dashboard
+CHANNEL3_API_KEY=
+# console.anthropic.com
+ANTHROPIC_API_KEY=
+# any random string; the iOS app sends it as X-App-Key
+APP_KEY=dev-local

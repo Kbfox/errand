@@ -1,0 +1,24 @@
+name = "errand"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+PAYPAL_ENV = "sandbox"            # sandbox | live
+CHANNEL3_BASE_URL = "https://api.trychannel3.com/v0"
+PUBLIC_BASE_URL = "http://localhost:8787"   # overridden after first deploy
+APP_RETURN_SCHEME = "errand"      # errand://paypal/return?token=...
+
+# Secrets (never in this file). Local: worker/.dev.vars. Deployed: npm run secrets
+#   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, ANTHROPIC_API_KEY, APP_KEY
+
+# Week 2: persistence
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "..."
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "errand"
+# database_id = "..."
+# [triggers]
+# crons = ["*/15 * * * *"]   # price watch

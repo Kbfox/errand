@@ -1,0 +1,39 @@
+name: Errand
+options:
+  bundleIdPrefix: com.errand
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Secrets.xcconfig
+  Release: Config/Secrets.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "5"
+    DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+    TARGETED_DEVICE_FAMILY: "1"
+targets:
+  Errand:
+    type: application
+    platform: iOS
+    sources: [App, Views, Services]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Errand
+        UILaunchScreen: {}
+        ITSAppUsesNonExemptEncryption: false
+        API_BASE_URL: $(API_BASE_URL)
+        APP_KEY: $(APP_KEY)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.errand.ios
+            CFBundleURLSchemes: [errand]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.errand.ios
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait

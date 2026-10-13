@@ -1,0 +1,26 @@
+export interface Env {
+  PAYPAL_ENV: "sandbox" | "live";
+  CHANNEL3_BASE_URL: string;
+  PUBLIC_BASE_URL: string;
+  APP_RETURN_SCHEME: string;
+  PAYPAL_CLIENT_ID: string;
+  PAYPAL_CLIENT_SECRET: string;
+  CHANNEL3_API_KEY: string;
+  ANTHROPIC_API_KEY: string;
+  APP_KEY: string;
+  KV?: KVNamespace;
+  DB?: D1Database;
+}
+
+export function json(data: unknown, status = 200, headers: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", ...headers },
+  });
+}
+
+export class HttpError extends Error {
+  constructor(public status: number, message: string, public detail?: unknown) {
+    super(message);
+  }
+}
