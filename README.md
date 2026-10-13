@@ -21,6 +21,8 @@ It does not recommend and stop. It transacts.
 | 4. Next time it just buys | Under your auto-buy limit and monthly cap, Gofer charges your saved PayPal wallet with no sheet | Orders v2 with `payment_source.paypal.vault_id` (auto-captured) |
 | 5. Watch a price | "Buy it automatically if it drops under $60." A cron re-checks the price; when it hits, Gofer buys unattended, still inside your rules | Channel3 `GET /v1/products/{id}` + price tracking, Orders v2 vault charge |
 | 6. Track it | Orders tab shows every purchase, how it was authorised, and shipment status | Orders v2 `/track` |
+| 7. Show it a photo or a link | Snap a product or paste a URL; Gofer identifies it and offers to buy | Channel3 `/v1/image-search`, `/v1/lookup` |
+| 8. Get told | A push arrives when a watched price hits and Gofer buys, or when a purchase needs your approval | APNs (provider token from the Worker) |
 
 ### Spending rules are enforced by the server, not the model
 
@@ -66,6 +68,8 @@ iPhone app (SwiftUI, iOS 17+)                 Cloudflare Worker (TypeScript)
 
 - **LLM:** Cloudflare Workers AI by default (no API key, free tier). `src/llm.ts` is provider-agnostic; set `LLM_PROVIDER=openai-compatible` with `LLM_BASE_URL` and a `LLM_API_KEY` secret to use DeepSeek, OpenAI, Qwen or any compatible endpoint.
 - **Agent events** (`status`, `candidates`, `message`, `checkout`, `purchased`, `watching`, `error`, `done`) stream over server-sent events so the UI updates as the agent works.
+- **Deterministic guards around the model:** a conflict filter (`constraints.ts`) drops any shortlisted product whose structured attributes contradict the request (wireless when you asked for wired, brown switches when you asked for blue), and the purchase guard in `agent.ts` only lets money move on an explicit user choice.
+- **Push:** the Worker signs an ES256 provider token with the team's APNs key and posts to APNs directly; devices register their token at `POST /devices`.
 - **Merchant model:** in the sandbox, Gofer itself is the merchant (the PayPal business sandbox account receives the money). Product discovery and buy links come from Channel3; Gofer charges the user through PayPal and records the order.
 
 ---
@@ -96,7 +100,7 @@ Smoke-test PayPal without the app (create order → approve in a browser → cap
 cd ios
 cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig   # APP_KEY must match the worker's; set your DEVELOPMENT_TEAM
 xcodegen generate
-open Gofer.xcodeproj                 # run the Gofer scheme on a simulator
+open Gofer.xcodeproj                 # run the Gofer scheme on a simulator (keep signing on: push registration needs the aps-environment entitlement)
 ```
 
 Debug builds talk to `http://localhost:8787`; Release builds talk to the deployed Worker (see `ios/project.yml`).
@@ -108,6 +112,7 @@ cd worker
 npx wrangler d1 create errand         # once; put the id in wrangler.toml
 npx wrangler d1 migrations apply errand --remote
 npm run secrets                       # PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY (+ LLM_API_KEY if not Workers AI)
+npx wrangler secret put APNS_KEY < AuthKey_XXXX.p8   # optional: enables push; set APNS_KEY_ID / APNS_TEAM_ID / APNS_TOPIC in wrangler.toml
 npm run deploy
 ```
 
