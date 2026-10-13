@@ -39,7 +39,7 @@ Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Tim
 
 **Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, workers-ai, typescript, paypal, paypal-orders-api, paypal-vault, channel3, llama
 
-**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `<public link — ASC app "Gofer Shopping Agent" (id 6822217457), external group "Judges", build 1.0 (1) uploaded 2026-10-13; add the build, fill Test Information, pass Beta App Review, then enable the public link>` · Backend health `https://gofer.kbfoxtk.workers.dev/health`
+**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `https://testflight.apple.com/join/wfkdTAhA` (external group "Judges" on ASC app "Gofer Shopping Agent" 6822217457; build 1.0 (1) submitted for Beta App Review 2026-10-13, link activates on approval) · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
 **Video:** `<YouTube link>`
 
@@ -92,7 +92,7 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 - **Would build again:** Yes. Orders v2 + Vault is all an agent needs to move money safely, and the sandbox is faithful.
 
 ### Testing notes for judges (paste into the submission's testing field, not the repo)
-- TestFlight link: `<link>`; or build from source (README).
+- TestFlight link: https://testflight.apple.com/join/wfkdTAhA (iOS 17+); or build from source (README).
 - PayPal **sandbox personal** account for checkout: `<email>` / `<password>` (sandbox only).
 - Suggested path: README → "Testing guide for judges" (4 steps). Simulate price drop is Debug-only; in the TestFlight build the cron evaluates live prices every 15 minutes.
 
@@ -102,7 +102,7 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 - [ ] Video uploaded to YouTube (public or unlisted), ≤ 3:00, link in form
 - [ ] GitHub repo public, LICENSE visible in About
 - [ ] README placeholders filled (video, TestFlight)
-- [ ] TestFlight public link live (ASC: Gofer Shopping Agent 6822217457 → TestFlight → Judges → add build 1 → Test Information → Beta App Review → Settings → Public link); or clear "build from source" instructions confirmed on a clean machine
+- [ ] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) waiting for Beta App Review since 2026-10-13; check ASC → TestFlight → Judges); or clear "build from source" instructions confirmed on a clean machine
 - [ ] Worker deployed, `/health` ok, cron enabled
 - [ ] Sandbox personal account credentials in testing notes
 - [ ] Prize categories ticked: Agentic Commerce, PayPal + AI, Demo Delivery, Channel3
