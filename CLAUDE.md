@@ -1,7 +1,7 @@
 # Gofer — 交接
 
 ## 当前状态（2026-10-13 01:30，上一会话结束时）
-产品代码、后端、线上部署、推送全部完成并验证；**剩下的是交付三件事**，全部需要用户参与或由用户先决定：
+产品代码、后端、线上部署、推送全部完成并验证；**剩下的是交付事项（下列 1–4，5 可选）**，全部需要用户参与或由用户先决定：
 1. **用户在模拟器里整体过一遍 App**（iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`，已装最新 Debug 签名构建）。不满意的地方改完再录视频。
 2. **重录演示视频**（脚本 `docs/submission.md` 第 1 节，已含照片搜索与推送镜头）。要点：App 需直连线上 Worker 才能拍到推送横幅，构建时覆盖 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`（或用 Release 配置，但 Release 没有 Simulate 按钮；线上也有 `/debug/watches/:id/simulate`，可用 curl 触发）；必须带签名构建（`-allowProvisioningUpdates`），否则推送注册被忽略；录前 `simctl status_bar override --time 9:41`、清该用户的 orders/watches、规则归零；PayPal 沙盒登录态可能过期，录到支付页若要登录就停下让用户输密码；录屏文件先转 CFR 再剪（见 submission.md 录制日志）。旧素材 `~/Desktop/errand-video/` 已过时。
 3. **TestFlight**：用户登录 App Store Connect 后，助手在内置浏览器建 App 记录（名称 Gofer，Bundle com.gofer.ios 已在开发者账号注册并带推送能力），然后 `ios/Config/ExportOptions.plist` 改 destination=upload 重新 exportArchive 上传（流程同 MustPlay）。
@@ -24,9 +24,9 @@ PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`�
 ```
 cd worker && npm install && npm run dev            # 本地 8787
 cd worker && ./scripts/smoke-paypal.sh             # curl 级沙盒下单→审批→capture
-cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer -destination 'platform=iOS Simulator,id=FA278CFD-405E-4646-888C-1F36769773E8' -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build
+cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer -destination 'platform=iOS Simulator,id=250FDF0D-DF15-4DC0-B569-B17ACF39C22A' -derivedDataPath build/dd -allowProvisioningUpdates build   # 带签名，推送才能注册；装机 xcrun simctl install 250FDF0D-DF15-4DC0-B569-B17ACF39C22A build/dd/Build/Products/Debug-iphonesimulator/Gofer.app
 ```
-新增 Swift 文件后必须 `xcodegen generate`。模拟器 iPhone 18 Pro Max `FA278CFD-405E-4646-888C-1F36769773E8`。
+新增 Swift 文件后必须 `xcodegen generate`。模拟器用 **iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`**（18 Pro Max 归另一会话的 MustPlay 用）。
 
 ## 账号（用户已建）
 - PayPal 开发者后台已有沙盒 App "Default Application"；沙盒账号：自动生成的 C2（中国）一对 + 用户手建的美区 Business/Personal 一对。**演示一律用美区账号**
