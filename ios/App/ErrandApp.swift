@@ -6,9 +6,13 @@ struct ErrandApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChatView()
-                .environment(checkout)
-                .onOpenURL { url in checkout.handle(url) }
+            TabView {
+                ChatView().tabItem { Label("Errand", systemImage: "bubble.left.and.text.bubble.right.fill") }
+                OrdersView().tabItem { Label("Orders", systemImage: "shippingbox.fill") }
+                RulesView().tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
+            }
+            .environment(checkout)
+            .onOpenURL { url in checkout.handle(url) }
         }
     }
 }

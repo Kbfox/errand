@@ -83,6 +83,13 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
   const messages: llm.Message[] = [{ role: "system", content: SYSTEM }, ...req.messages.map((m) => ({ role: m.role, content: m.content }) as llm.Message)];
   if (known.size) messages.splice(1, 0, { role: "system", content: `Products currently shown to the user (id: title, price): ` + [...known.values()].map((c) => `${c.id}: ${c.title} $${c.price}`).join("; ") });
 
+  // Hard guard, independent of the model: money can only move on an explicit user choice.
+  // (1) never in the same turn in which candidates were presented; (2) the user's latest message must
+  // reference the product (the app's pick message includes "(id XXX)") or contain a purchase verb.
+  const lastUser = [...req.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  let presentedThisTurn = false;
+  const userChose = (id: string) => lastUser.includes(id) || /\b(buy|take|order|get|purchase|go with|pick|that one|this one|yes)\b/i.test(lastUser);
+
   let checkoutStarted = false;
   for (let step = 0; step < 6 && !checkoutStarted; step++) {
     const res = await llm.chat(env, messages, TOOLS);
@@ -107,16 +114,27 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           for (const c of found) known.set(c.id, c);
           result = { note: "sorted by price ascending; verify constraints using attributes/features", products: found.map(({ buyUrl, image, ...rest }) => rest) };
         } else if (call.name === "present_candidates") {
+          if (presentedThisTurn) {
+            result = { refused: true, reason: "Candidates were already shown this turn. Ask the user which one to buy and stop." };
+            messages.push({ role: "tool", tool_call_id: call.id, name: call.name, content: JSON.stringify(result) });
+            continue;
+          }
           const picks = ((call.arguments as any).picks ?? []) as { id: string; reason: string }[];
           const items = picks
             .filter((p) => known.has(p.id) && !NEGATED.test(p.reason ?? ""))   // model-proof: drop "but no X" picks
             .map((p) => ({ ...known.get(p.id)!, reason: p.reason }))
             .slice(0, 3);
           await emit({ type: "candidates", items });
-          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length };
+          presentedThisTurn = true;
+          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length, note: "Now ask the user which one to buy and stop. Do not call start_checkout in this turn." };
         } else if (call.name === "start_checkout") {
           const c = known.get((call.arguments as any).id);
           if (!c) throw new Error("unknown product id");
+          if (presentedThisTurn || !userChose(c.id)) {
+            result = { refused: true, reason: "The user has not chosen this product yet. Ask which one to buy and wait for the answer." };
+            messages.push({ role: "tool", tool_call_id: call.id, name: call.name, content: JSON.stringify(result) });
+            continue;
+          }
           await emit({ type: "status", text: `Checking your rules for ${c.title}` });
           const p = await commerce.buy(env, userId, c);
           if (p.mode === "auto") {
@@ -131,6 +149,11 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
           const a = call.arguments as { id: string; target_price: number };
           const c = known.get(a.id);
           if (!c) throw new Error("unknown product id");
+          if (presentedThisTurn || !/\d/.test(lastUser)) {
+            result = { refused: true, reason: "Only watch a price when the user explicitly asked for it with a target price." };
+            messages.push({ role: "tool", tool_call_id: call.id, name: call.name, content: JSON.stringify(result) });
+            continue;
+          }
           const id = crypto.randomUUID();
           await db.ensureUser(env, userId);
           await db.insertWatch(env, { id, userId, candidate: c, targetPrice: a.target_price });

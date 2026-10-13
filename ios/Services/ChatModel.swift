@@ -10,17 +10,14 @@ final class ChatModel {
     var pendingCheckout: (orderId: String, candidate: Candidate)? = nil
 
     private var shown: [String: Candidate] = [:]   // candidates the user has seen, keyed by id
-    private let userId: String = {
-        let k = "errand.userId"
-        if let v = UserDefaults.standard.string(forKey: k) { return v }
-        let v = UUID().uuidString; UserDefaults.standard.set(v, forKey: k); return v
-    }()
+    private let userId = APIClient.userId
 
     static let suggestions = [
         "Wired mechanical keyboard, blue switches, under $120",
         "Running shoes for wide feet, size 10, under $90",
         "A 1 L insulated water bottle that fits a car cup holder",
     ]
+    static let watchHint = "Tip: say \"buy it if it drops under $60\" and Errand will watch the price."
 
     func send(_ text: String, checkout: CheckoutCoordinator) {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -40,7 +37,8 @@ final class ChatModel {
             switch $0 {
             case let .user(_, t): return .init(role: "user", content: t)
             case let .assistant(_, t): return .init(role: "assistant", content: t)
-            case let .receipt(_, c, id, st): return .init(role: "assistant", content: "Order \(id) for \(c.title) is \(st).")
+            case let .receipt(_, c, id, st, auto, _): return .init(role: "assistant", content: "\(auto ? "Bought automatically" : "Order") \(id) for \(c.title): \(st).")
+            case let .watching(_, c, t): return .init(role: "assistant", content: "Watching \(c.title); will buy at or under $\(t).")
             default: return nil
             }
         }
@@ -59,17 +57,21 @@ final class ChatModel {
                     items.append(.candidates(items: list))
                 case let .message(t): items.append(.assistant(text: t))
                 case let .error(t): items.append(.error(text: t))
-                case let .checkout(orderId, url, c):
+                case let .checkout(orderId, url, c, reason):
                     status = "Waiting for PayPal…"
                     pendingCheckout = (orderId, c)
                     do {
                         try await checkout.open(url)
                         let r = checkout.lastResult
-                        items.append(.receipt(candidate: c, orderId: r?.orderID ?? orderId, status: r?.status ?? "UNKNOWN"))
+                        items.append(.receipt(candidate: c, orderId: r?.orderID ?? orderId, status: r?.status ?? "UNKNOWN", auto: false, reason: reason))
                     } catch {
                         items.append(.error(text: "PayPal checkout was cancelled."))
                     }
                     pendingCheckout = nil
+                case let .purchased(orderId, c, reason):
+                    items.append(.receipt(candidate: c, orderId: orderId, status: "COMPLETED", auto: true, reason: reason))
+                case let .watching(_, c, target):
+                    items.append(.watching(candidate: c, targetPrice: target))
                 case .done: break
                 }
             }

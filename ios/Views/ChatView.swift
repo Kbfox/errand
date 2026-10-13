@@ -52,8 +52,10 @@ struct ChatView: View {
                     CandidateCard(candidate: c, disabled: model.busy) { model.pick(c, checkout: checkout) }
                 }
             }
-        case let .receipt(_, c, orderId, status):
-            ReceiptCard(candidate: c, orderId: orderId, status: status)
+        case let .receipt(_, c, orderId, status, auto, reason):
+            ReceiptCard(candidate: c, orderId: orderId, status: status, auto: auto, reason: reason)
+        case let .watching(_, c, target):
+            WatchingCard(candidate: c, targetPrice: target)
         case let .error(_, text):
             Label(text, systemImage: "exclamationmark.triangle")
                 .font(.footnote).foregroundStyle(.red).padding(.horizontal, 4)
@@ -91,6 +93,7 @@ private struct EmptyState: View {
             Image(systemName: "bag.badge.questionmark").font(.system(size: 44)).foregroundStyle(.tint)
             Text("Tell it what you need.\nIt finds it, you approve, it pays.")
                 .font(.title3.weight(.semibold))
+            Text(ChatModel.watchHint).font(.footnote).foregroundStyle(.secondary)
             Text("Try one:").font(.footnote).foregroundStyle(.secondary)
             ForEach(ChatModel.suggestions, id: \.self) { s in
                 Button { tap(s) } label: {
@@ -157,13 +160,30 @@ struct CandidateCard: View {
 
 struct ReceiptCard: View {
     let candidate: Candidate; let orderId: String; let status: String
+    var auto: Bool = false; var reason: String = ""
     var ok: Bool { status == "COMPLETED" }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(ok ? "Paid with PayPal" : "Payment \(status.lowercased())", systemImage: ok ? "checkmark.seal.fill" : "xmark.octagon.fill")
+            Label(ok ? (auto ? "Bought for you with PayPal" : "Paid with PayPal") : "Payment \(status.lowercased())", systemImage: ok ? (auto ? "bolt.badge.checkmark.fill" : "checkmark.seal.fill") : "xmark.octagon.fill")
                 .font(.headline).foregroundStyle(ok ? .green : .red)
+            if auto, !reason.isEmpty { Text("No approval needed: \(reason.lowercased()).").font(.footnote).foregroundStyle(.secondary) }
             Text(candidate.title).font(.subheadline)
             HStack { Text(candidate.priceText).font(.subheadline.weight(.semibold)); Spacer(); Text(orderId).font(.caption.monospaced()).foregroundStyle(.secondary) }
+        }
+        .padding(12)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+
+struct WatchingCard: View {
+    let candidate: Candidate; let targetPrice: Double
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Watching the price", systemImage: "eye.fill").font(.headline).foregroundStyle(.orange)
+            Text(candidate.title).font(.subheadline)
+            Text("Now \(candidate.priceText). Errand will buy it the moment it is \(Candidate.money(targetPrice, candidate.currency)) or less, within your rules.")
+                .font(.footnote).foregroundStyle(.secondary)
         }
         .padding(12)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))

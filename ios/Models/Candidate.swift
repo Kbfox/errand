@@ -30,11 +30,13 @@ enum AgentEvent: Decodable {
     case status(String)
     case candidates([Candidate])
     case message(String)
-    case checkout(orderId: String, approveUrl: URL, candidate: Candidate)
+    case checkout(orderId: String, approveUrl: URL, candidate: Candidate, reason: String)
+    case purchased(orderId: String, candidate: Candidate, reason: String)
+    case watching(watchId: String, candidate: Candidate, targetPrice: Double)
     case error(String)
     case done
 
-    private enum K: String, CodingKey { case type, text, items, orderId, approveUrl, candidate }
+    private enum K: String, CodingKey { case type, text, items, orderId, approveUrl, candidate, reason, watchId, targetPrice }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: K.self)
@@ -42,7 +44,9 @@ enum AgentEvent: Decodable {
         case "status": self = .status(try c.decode(String.self, forKey: .text))
         case "candidates": self = .candidates(try c.decode([Candidate].self, forKey: .items))
         case "message": self = .message(try c.decode(String.self, forKey: .text))
-        case "checkout": self = .checkout(orderId: try c.decode(String.self, forKey: .orderId), approveUrl: try c.decode(URL.self, forKey: .approveUrl), candidate: try c.decode(Candidate.self, forKey: .candidate))
+        case "checkout": self = .checkout(orderId: try c.decode(String.self, forKey: .orderId), approveUrl: try c.decode(URL.self, forKey: .approveUrl), candidate: try c.decode(Candidate.self, forKey: .candidate), reason: (try? c.decode(String.self, forKey: .reason)) ?? "")
+        case "purchased": self = .purchased(orderId: try c.decode(String.self, forKey: .orderId), candidate: try c.decode(Candidate.self, forKey: .candidate), reason: (try? c.decode(String.self, forKey: .reason)) ?? "")
+        case "watching": self = .watching(watchId: try c.decode(String.self, forKey: .watchId), candidate: try c.decode(Candidate.self, forKey: .candidate), targetPrice: try c.decode(Double.self, forKey: .targetPrice))
         case "error": self = .error(try c.decode(String.self, forKey: .text))
         default: self = .done
         }

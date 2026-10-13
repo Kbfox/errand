@@ -13,11 +13,8 @@ struct AgentClient {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    var req = URLRequest(url: AppConfig.apiBaseURL.appending(path: "/agent"))
-                    req.httpMethod = "POST"
+                    var req = APIClient.shared.request("/agent", method: "POST")
                     req.timeoutInterval = 180
-                    req.setValue("application/json", forHTTPHeaderField: "content-type")
-                    req.setValue(AppConfig.appKey, forHTTPHeaderField: "x-app-key")
                     req.httpBody = try JSONEncoder().encode(body)
                     let (bytes, resp) = try await URLSession.shared.bytes(for: req)
                     guard let http = resp as? HTTPURLResponse, http.statusCode == 200 else {
