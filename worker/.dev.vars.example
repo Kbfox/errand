@@ -3,7 +3,7 @@ PAYPAL_CLIENT_ID=
 PAYPAL_CLIENT_SECRET=
 # trychannel3.com dashboard
 CHANNEL3_API_KEY=
-# console.anthropic.com
-ANTHROPIC_API_KEY=
+# only if LLM_PROVIDER=openai-compatible (DeepSeek / OpenAI / Qwen ...)
+LLM_API_KEY=
 # any random string; the iOS app sends it as X-App-Key
 APP_KEY=dev-local

@@ -63,7 +63,7 @@ iOS (SwiftUI, iOS 17+)                     Cloudflare Worker (TypeScript)
                                         Channel3 API  PayPal Sandbox  Claude API
 ```
 
-- **agent**：Claude API tool-use 循环，模型 `claude-sonnet-5-5`（快、便宜，够用）。系统提示里写死"先 rules_check 再 create_order"。
+- **agent**：Cloudflare Workers AI（Llama 3.3 70B，工具调用，无需 key）；provider 无关层可切 OpenAI 兼容接口。系统提示里写死"先 rules_check 再 create_order"。
 - **PayPal**：直接用 REST（OAuth client_credentials 拿 token 缓存在 KV），不引 Agent Toolkit 也行；但 README 和提交描述里要提到工具定义与 PayPal Agent Toolkit 的 orders.create / orders.capture 对齐，评委看得懂。
 - **复用 MustPlay 的东西**：Worker 部署流程（wrangler + secrets）、XcodeGen 项目骨架、APNs（OneSignal 可以继续用，也可以直接 APNs）、Secrets.xcconfig 规范。
 - **不需要** RevenueCat。
@@ -115,4 +115,4 @@ iOS (SwiftUI, iOS 17+)                     Cloudflare Worker (TypeScript)
 2. https://trychannel3.com 注册，拿 API key
 3. https://paypalaihackathon.devpost.com 点 Join hackathon
 4. https://qloo.devpost.com 点 Join，并填 API key 申请表（人工发放，几个工作日）
-5. 告诉我你想用的 Anthropic API key 放在哪（Worker secret），我不需要看到值
+5. ~~Anthropic key~~ 已改用 Workers AI，不需要

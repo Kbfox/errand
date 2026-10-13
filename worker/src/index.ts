@@ -1,11 +1,12 @@
 import { Env, HttpError, json } from "./env";
 import * as paypal from "./paypal";
 import * as channel3 from "./channel3";
+import * as agent from "./agent";
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await route(req, env);
+      return await route(req, env, ctx);
     } catch (e) {
       if (e instanceof HttpError) return json({ error: e.message, detail: e.detail }, e.status);
       console.error(e);
@@ -18,7 +19,7 @@ function requireAppKey(req: Request, env: Env) {
   if (req.headers.get("x-app-key") !== env.APP_KEY) throw new HttpError(401, "bad app key");
 }
 
-async function route(req: Request, env: Env): Promise<Response> {
+async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
   const p = url.pathname;
 
@@ -65,8 +66,17 @@ async function route(req: Request, env: Env): Promise<Response> {
   }
 
   if (p === "/agent" && req.method === "POST") {
-    // Week 2: Claude tool loop (channel3_search, rules_check, paypal_create_order, paypal_capture_order, paypal_add_tracking) with SSE.
-    return json({ error: "not implemented yet" }, 501);
+    const body = (await req.json()) as agent.AgentRequest;
+    const { readable, writable } = new TransformStream();
+    const w = writable.getWriter();
+    const enc = new TextEncoder();
+    const emit = async (e: agent.AgentEvent) => { await w.write(enc.encode(`data: ${JSON.stringify(e)}\n\n`)); };
+    ctx.waitUntil((async () => {
+      try { await agent.run(env, body, emit); }
+      catch (e) { await emit({ type: "error", text: String(e) }); }
+      finally { await emit({ type: "done" }); await w.close(); }
+    })());
+    return new Response(readable, { headers: { "content-type": "text/event-stream", "cache-control": "no-cache" } });
   }
 
   return json({ error: "not found" }, 404);

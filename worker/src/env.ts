@@ -6,7 +6,11 @@ export interface Env {
   PAYPAL_CLIENT_ID: string;
   PAYPAL_CLIENT_SECRET: string;
   CHANNEL3_API_KEY: string;
-  ANTHROPIC_API_KEY: string;
+  LLM_PROVIDER: "workers-ai" | "openai-compatible";
+  LLM_MODEL: string;
+  LLM_BASE_URL: string;
+  LLM_API_KEY?: string;
+  AI: Ai;
   APP_KEY: string;
   KV?: KVNamespace;
   DB?: D1Database;

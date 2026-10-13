@@ -19,6 +19,10 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - PayPal 开发者后台已有沙盒 App "Default Application"；沙盒账号：自动生成的 C2（中国）一对 + 用户手建的美区 Business/Personal 一对。**演示一律用美区账号**
 - Channel3、Qloo key：见对话进度
 
+## LLM 方案（2026-10-13 定稿）
+用户没有 Anthropic key，agent 改用 **Cloudflare Workers AI**（`[ai] binding = "AI"`，模型 `@cf/meta/llama-3.3-70b-instruct-fp8-fast`，无需 key，走 Cloudflare 免费额度）。`src/llm.ts` 是 provider 无关层，`LLM_PROVIDER=openai-compatible` + `LLM_BASE_URL` + secret `LLM_API_KEY` 可切 DeepSeek / OpenAI / Qwen。坑：Workers AI 的 assistant 消息 content 不能为 null，要给 ""；SSE 后台任务必须 `ctx.waitUntil`，否则返回响应后被回收，流只剩第一个事件。
+`src/agent.ts`：工具 search_products / present_candidates / start_checkout，最多 6 步，事件 status / candidates / message / checkout / error / done。多轮：客户端把上一轮的 candidates 原样回传。本地 `wrangler dev` 下 AI binding 走远程，需要 wrangler 已登录。
+
 ## 第 1 周验证结果（2026-10-13，沙盒，美区账号）
 - OAuth → create order（带 `attributes.vault.store_in_vault=ON_SUCCESS`）→ 用户审批 → capture：**COMPLETED**，返回 `payment_source.paypal.attributes.vault.id`（VAULTED）
 - 用 `payment_source.paypal.vault_id` 建单：**直接 COMPLETED 并自动 capture，无需审批** → "盯价代买"无人值守付款可行
