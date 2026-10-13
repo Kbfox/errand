@@ -1,5 +1,18 @@
 # Gofer — 交接
 
+## 当前状态（2026-10-13 01:30，上一会话结束时）
+产品代码、后端、线上部署、推送全部完成并验证；**剩下的是交付三件事**，全部需要用户参与或由用户先决定：
+1. **用户在模拟器里整体过一遍 App**（iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`，已装最新 Debug 签名构建）。不满意的地方改完再录视频。
+2. **重录演示视频**（脚本 `docs/submission.md` 第 1 节，已含照片搜索与推送镜头）。要点：App 需直连线上 Worker 才能拍到推送横幅，构建时覆盖 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`（或用 Release 配置，但 Release 没有 Simulate 按钮；线上也有 `/debug/watches/:id/simulate`，可用 curl 触发）；必须带签名构建（`-allowProvisioningUpdates`），否则推送注册被忽略；录前 `simctl status_bar override --time 9:41`、清该用户的 orders/watches、规则归零；PayPal 沙盒登录态可能过期，录到支付页若要登录就停下让用户输密码；录屏文件先转 CFR 再剪（见 submission.md 录制日志）。旧素材 `~/Desktop/errand-video/` 已过时。
+3. **TestFlight**：用户登录 App Store Connect 后，助手在内置浏览器建 App 记录（名称 Gofer，Bundle com.gofer.ios 已在开发者账号注册并带推送能力），然后 `ios/Config/ExportOptions.plist` 改 destination=upload 重新 exportArchive 上传（流程同 MustPlay）。
+4. **Devpost**：https://paypalaihackathon.devpost.com 点 Join、建提交草稿、填 `docs/submission.md` 第 2 节文案；Devpost 常卡 Cloudflare 人机验证，要用户在浏览器面板点一下。截止 **11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
+5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里，内容：已于 10-12 上架，感谢）。
+
+用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 已有 users/rules/devices 行；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
+
+**会话习惯**：另一个会话可能在 MustPlay 上并行开发（Qloo Scout），用的是 iPhone 18 Pro Max 模拟器和 8788 端口；**不要 `pkill -f "wrangler dev"`**（会误杀对方），只按 PID 或 `pgrep -f "Gofer/worker"` 杀自己的。本地 Worker 用 8787。
+
+
 PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`。截止 **2026-11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
 
 ## 结构
