@@ -12,6 +12,11 @@ export interface Env {
   LLM_API_KEY?: string;
   AI: Ai;
   APP_KEY: string;
+  APNS_KEY?: string;          // contents of the .p8 (secret)
+  APNS_KEY_ID: string;
+  APNS_TEAM_ID: string;
+  APNS_TOPIC: string;         // bundle id
+  APNS_ENV: "sandbox" | "production";
   DB: D1Database;
 }
 

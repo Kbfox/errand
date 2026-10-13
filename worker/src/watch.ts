@@ -4,6 +4,7 @@ import { Env } from "./env";
 import * as db from "./db";
 import * as channel3 from "./channel3";
 import * as commerce from "./commerce";
+import * as apns from "./apns";
 
 export async function currentPrice(env: Env, productId: string): Promise<number | null> {
   try {
@@ -26,10 +27,12 @@ export async function evaluate(env: Env, w: db.WatchRow, forcedPrice?: number): 
     const p = await commerce.buy(env, w.user_id, c, "watch");
     if (p.mode === "auto") {
       await db.updateWatch(env, w.id, { status: "bought", orderId: p.orderId });
+      await apns.notifyUser(env, w.user_id, { title: "Bought it for you", body: `${c.title} dropped to $${price.toFixed(2)}. Paid with your PayPal wallet.`, data: { orderId: p.orderId } });
       return { watchId: w.id, price, result: "bought", orderId: p.orderId };
     }
     // Rules did not allow an unattended purchase: park it for the user to approve in the app.
     await db.updateWatch(env, w.id, { status: "needs_approval", orderId: p.orderId });
+    await apns.notifyUser(env, w.user_id, { title: "Price hit, your approval needed", body: `${c.title} is $${price.toFixed(2)}. ${p.decision.reason}. Open Gofer to approve.`, data: { watchId: w.id } });
     return { watchId: w.id, price, result: "needs_approval", orderId: p.orderId, detail: p.decision.reason };
   } catch (e) {
     return { watchId: w.id, price, result: "error", detail: String(e) };

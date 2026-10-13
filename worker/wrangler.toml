@@ -13,10 +13,14 @@ LLM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 LLM_BASE_URL = ""
 CHANNEL3_BASE_URL = "https://api.trychannel3.com/v1"
 PUBLIC_BASE_URL = "https://gofer.kbfoxtk.workers.dev"   # production; .dev.vars overrides locally
-APP_RETURN_SCHEME = "gofer"      # gofer://paypal/return?token=...
+APP_RETURN_SCHEME = "gofer"
+APNS_KEY_ID = "96B53G7L5Y"
+APNS_TEAM_ID = "65SKN9BR9J"
+APNS_TOPIC = "com.gofer.ios"
+APNS_ENV = "sandbox"            # TestFlight and dev builds use the APNs sandbox      # gofer://paypal/return?token=...
 
 # Secrets (never in this file). Local: worker/.dev.vars. Deployed: npm run secrets
-#   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY, (optional) LLM_API_KEY
+#   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY, (optional) LLM_API_KEY, APNS_KEY (the .p8 contents)
 
 [[d1_databases]]
 binding = "DB"

@@ -27,6 +27,8 @@ targets:
     type: application
     platform: iOS
     sources: [App, Views, Services, Models, Resources]
+    entitlements:
+      path: App/Gofer.entitlements
     info:
       path: App/Info.plist
       properties:

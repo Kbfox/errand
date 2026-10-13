@@ -71,14 +71,17 @@ final class ChatModel {
                         try await checkout.open(url)
                         let r = checkout.lastResult
                         items.append(.receipt(candidate: c, orderId: r?.orderID ?? orderId, status: r?.status ?? "UNKNOWN", auto: false, reason: reason))
+                        if r?.status == "COMPLETED" { PushPermission.requestIfNeeded() }
                     } catch {
                         items.append(.error(text: "PayPal checkout was cancelled."))
                     }
                     pendingCheckout = nil
                 case let .purchased(orderId, c, reason):
                     items.append(.receipt(candidate: c, orderId: orderId, status: "COMPLETED", auto: true, reason: reason))
+                    PushPermission.requestIfNeeded()
                 case let .watching(_, c, target):
                     items.append(.watching(candidate: c, targetPrice: target))
+                    PushPermission.requestIfNeeded()
                 case .done: break
                 }
             }

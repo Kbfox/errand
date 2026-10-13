@@ -5,6 +5,7 @@ import * as agent from "./agent";
 import * as db from "./db";
 import * as commerce from "./commerce";
 import * as watch from "./watch";
+import * as apns from "./apns";
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -75,6 +76,17 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   }
 
   const uid = userOf(req);
+
+  if (p === "/devices" && req.method === "POST") {
+    const { token } = (await req.json()) as { token: string };
+    if (!/^[0-9a-f]{32,}$/i.test(token ?? "")) throw new HttpError(400, "bad token");
+    await db.ensureUser(env, uid);
+    await env.DB.prepare("INSERT INTO devices (token, user_id, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(token) DO UPDATE SET user_id = excluded.user_id, updated_at = excluded.updated_at").bind(token, uid).run();
+    return json({ ok: true });
+  }
+  if (p === "/debug/push" && req.method === "POST" && env.PAYPAL_ENV === "sandbox") {
+    return json({ ok: true, results: await apns.notifyUser(env, uid, { title: "Gofer test", body: "Push is wired up." }) });
+  }
 
   if (p === "/me" && req.method === "GET") {
     const u = await db.ensureUser(env, uid);

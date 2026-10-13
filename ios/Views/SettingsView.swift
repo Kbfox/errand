@@ -24,6 +24,13 @@ struct SettingsView: View {
                     Label("This build uses the PayPal sandbox: no real money moves.", systemImage: "testtube.2")
                 }
                 .font(.footnote)
+                Section("Notifications") {
+                    Button("Enable purchase alerts") { PushPermission.requestIfNeeded() }
+                    Text("Gofer tells you when a watched price hits and it buys, or when a purchase needs your approval.").font(.footnote).foregroundStyle(.secondary)
+                    #if DEBUG
+                    Button("Send test push") { Task { _ = try? await APIClient.shared.post("/debug/push", as: OK.self) } }
+                    #endif
+                }
                 Section("Data") {
                     if let me {
                         LabeledContent("Device ID", value: String(me.userId.prefix(8)) + "…").font(.footnote)

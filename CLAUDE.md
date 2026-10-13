@@ -30,6 +30,12 @@ cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer
 - Channel3 自带 Price Tracking 接口（start/stop/history），盯价不用自己轮询
 - 沙盒 vault_id / customer id 记在对话里，不入库；真实实现要按用户持久化到 D1
 
+## 推送（2026-10-13 凌晨验证通过）
+- Worker `src/apns.ts`：用团队 APNs key（Key ID 96B53G7L5Y，同 MustPlay）签 ES256 JWT，直接 fetch `api.sandbox.push.apple.com`（Cloudflare 线上走 HTTP/2 正常；**本地 wrangler dev 到 APNs 会 "Network connection lost"，推送只能在线上测**）。secret `APNS_KEY`（.p8 全文），vars APNS_KEY_ID / APNS_TEAM_ID / APNS_TOPIC / APNS_ENV 在 wrangler.toml。盯价成交 / 需审批时 `watch.ts` 调 `apns.notifyUser`。`POST /devices` 存 token（表 devices）。`POST /debug/push` 返回每台设备的 APNs 状态码。
+- iOS：`AppDelegate` 注册远程通知并上报 token；`PushPermission.requestIfNeeded()` 在首单成功 / 建 watch 后弹权限；Settings 有 Enable 和 Debug 的 Send test push。**模拟器构建必须带签名**（`xcodebuild ... -allowProvisioningUpdates`，不要 CODE_SIGNING_ALLOWED=NO），否则 aps-environment 不嵌入、注册被忽略。
+- App ID `com.gofer.ios` 已通过一次 `archive + exportArchive -allowProvisioningUpdates`（`ios/Config/ExportOptions.plist`，method app-store-connect / destination export）在开发者账号注册并带推送能力；之前 APNs 返回 TopicDisallowed 就是因为没注册。
+- 改名后 UserDefaults 键变为 `gofer.userId`，模拟器上的用户 id 换了（旧数据在 errand.userId 下，不用管）。
+
 ## 线上环境（2026-10-13 部署）
 - Worker：**https://gofer.kbfoxtk.workers.dev**（`cd worker && npm run deploy`）。远程 D1 已迁移（`wrangler d1 migrations apply errand --remote`），4 个 secret 已设（PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / CHANNEL3_API_KEY / APP_KEY，值取自 .dev.vars）。`PUBLIC_BASE_URL` 在 wrangler.toml 指向线上，本地由 .dev.vars 覆盖为 localhost。
 - iOS：`API_BASE_URL` 按配置区分，Debug=localhost:8787，Release=线上（project.yml settings.configs）。TestFlight 用 Release。

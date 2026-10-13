@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct GoferApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var checkout = CheckoutCoordinator()
 
     var body: some Scene {
