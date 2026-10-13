@@ -166,7 +166,10 @@ struct ReceiptCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label(ok ? (auto ? "Bought for you with PayPal" : "Paid with PayPal") : "Payment \(status.lowercased())", systemImage: ok ? (auto ? "bolt.badge.checkmark.fill" : "checkmark.seal.fill") : "xmark.octagon.fill")
                 .font(.headline).foregroundStyle(ok ? .green : .red)
-            if auto, !reason.isEmpty { Text("No approval needed: \(reason.lowercased()).").font(.footnote).foregroundStyle(.secondary) }
+            if ok, !reason.isEmpty {
+                Text(auto ? "No approval needed: \(reason.lowercased())." : "You approved it: \(reason.lowercased()).")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
             Text(candidate.title).font(.subheadline)
             HStack { Text(candidate.priceText).font(.subheadline.weight(.semibold)); Spacer(); Text(orderId).font(.caption.monospaced()).foregroundStyle(.secondary) }
         }
