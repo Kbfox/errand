@@ -9,7 +9,7 @@ Submission page: https://paypalaihackathon.devpost.com → Enter a Submission.
 
 **Re-record after the Gofer rename and UI pass (orange icon, new home, chips, Settings, push).** Build with signing on so the push banner appears. Record on the iPhone 18 Pro simulator (Gofer-only device `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`), Debug build so the **Simulate price drop** button exists. Fix the clock first: `xcrun simctl status_bar 250FDF0D-DF15-4DC0-B569-B17ACF39C22A override --time 9:41`. Record with `xcrun simctl io <udid> recordVideo --codec h264 ~/Desktop/errand-demo.mov`, trim with ffmpeg. Narration recorded separately (or captions), English.
 
-Before recording: fresh install (new user id), Rules = Always ask, log in to the PayPal sandbox once in a throwaway run so the ASWebAuthenticationSession "Gofer wants to use sandbox.paypal.com" dialog has already been accepted and PayPal cookies exist. Keep the local Worker running.
+Before recording: reset the demo user's server data (orders/watches deleted, rules 0, `vault_id` NULL on remote D1; done on 2026-10-13 02:00), Rules = Always ask, build with `API_BASE_URL=https://gofer.kbfoxtk.workers.dev` so the app talks to the deployed Worker (push only works there), log in to the PayPal sandbox once in a throwaway run so the ASWebAuthenticationSession "Gofer wants to use sandbox.paypal.com" dialog has already been accepted and PayPal cookies exist. In the watch line, quote the full card title ("Don't buy the *Typewriter Style Mechanical Gaming Keyboard* now…"); a loose name made Llama pick the wrong product once. The push banner stays ~5 s, keep recording through the Simulate tap.
 
 | Time | Screen | Narration |
 |---|---|---|
@@ -39,7 +39,7 @@ Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Tim
 
 **Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, workers-ai, typescript, paypal, paypal-orders-api, paypal-vault, channel3, llama
 
-**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `<link>` · Backend health `https://gofer.kbfoxtk.workers.dev/health`
+**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `<public link — ASC app "Gofer Shopping Agent" (id 6822217457), external group "Judges", build 1.0 (1) uploaded 2026-10-13; add the build, fill Test Information, pass Beta App Review, then enable the public link>` · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
 **Video:** `<YouTube link>`
 
@@ -102,7 +102,7 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 - [ ] Video uploaded to YouTube (public or unlisted), ≤ 3:00, link in form
 - [ ] GitHub repo public, LICENSE visible in About
 - [ ] README placeholders filled (video, TestFlight)
-- [ ] TestFlight public link live; or clear "build from source" instructions confirmed on a clean machine
+- [ ] TestFlight public link live (ASC: Gofer Shopping Agent 6822217457 → TestFlight → Judges → add build 1 → Test Information → Beta App Review → Settings → Public link); or clear "build from source" instructions confirmed on a clean machine
 - [ ] Worker deployed, `/health` ok, cron enabled
 - [ ] Sandbox personal account credentials in testing notes
 - [ ] Prize categories ticked: Agentic Commerce, PayPal + AI, Demo Delivery, Channel3

@@ -1,16 +1,22 @@
 # Gofer — 交接
 
-## 当前状态（2026-10-13 01:30，上一会话结束时）
-产品代码、后端、线上部署、推送全部完成并验证；**剩下的是交付事项（下列 1–4，5 可选）**，全部需要用户参与或由用户先决定：
-1. **用户在模拟器里整体过一遍 App**（iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`，已装最新 Debug 签名构建）。不满意的地方改完再录视频。
-2. **重录演示视频**（脚本 `docs/submission.md` 第 1 节，已含照片搜索与推送镜头）。要点：App 需直连线上 Worker 才能拍到推送横幅，构建时覆盖 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`（或用 Release 配置，但 Release 没有 Simulate 按钮；线上也有 `/debug/watches/:id/simulate`，可用 curl 触发）；必须带签名构建（`-allowProvisioningUpdates`），否则推送注册被忽略；录前 `simctl status_bar override --time 9:41`、清该用户的 orders/watches、规则归零；PayPal 沙盒登录态可能过期，录到支付页若要登录就停下让用户输密码；录屏文件先转 CFR 再剪（见 submission.md 录制日志）。旧素材 `~/Desktop/errand-video/` 已过时。
-3. **TestFlight**：用户登录 App Store Connect 后，助手在内置浏览器建 App 记录（名称 Gofer，Bundle com.gofer.ios 已在开发者账号注册并带推送能力），然后 `ios/Config/ExportOptions.plist` 改 destination=upload 重新 exportArchive 上传（流程同 MustPlay）。
-4. **Devpost**：https://paypalaihackathon.devpost.com 点 Join、建提交草稿、填 `docs/submission.md` 第 2 节文案；Devpost 常卡 Cloudflare 人机验证，要用户在浏览器面板点一下。截止 **11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
-5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里，内容：已于 10-12 上架，感谢）。
+## 当前状态（2026-10-13 02:00，上一会话结束时）
+本会话做完的事（全部在线上环境验证）：
+- **App 整体走通一遍**（iPhone 18 Pro，Debug 签名构建、`API_BASE_URL` 覆盖为线上 Worker）：键盘搜索 3 卡 → PayPal 沙盒审批（登录态仍有效，无需密码）→ 绿色收据且钱包已存 → Rules $100/$500 → 跑鞋 $39.95 "Bought for you with PayPal" → 盯价 watch → curl simulate → 推送横幅（日志 UIWillPresentNotificationAction）→ Orders 页三种授权。**录前数据已重置**（该用户 orders/watches 清空、规则归零、vault_id 置 NULL），App 已重启，状态栏已 9:41。
+- 修了两个会影响演示的坑：① `xcodegen generate` 会把 `Gofer.entitlements` 清空（project.yml 没写 properties），推送注册静默失效——已在 project.yml 的 `entitlements.properties` 写 `aps-environment`；② 多轮对话里候选过滤用的是**第一条**用户消息（"blue switches"），第二个请求（跑鞋）全被当颜色冲突剔成 "Top 0"——`agent.ts` 改为用最新一条非 "(id …)" 的用户消息，已部署。
+- **TestFlight**：App Store Connect 记录已建，名称 **Gofer Shopping Agent**（"Gofer" 被占用），ASC App ID **6822217457**，SKU gofer-ios，主语言 en-US。Build **1.0 (1)** 已上传并处理完（归档用 `CODE_SIGNING_ALLOWED=NO`，导出 `-allowProvisioningUpdates` 自动签名；Info.plist 需 `UISupportedInterfaceOrientations` + `UIRequiresFullScreen`，已加进 project.yml）。内部群组 **Tester**（自动分发，尚未加测试员）和外部群组 **Judges** 已建。
+- 代码已提交（9eb021b），本次会话结束前会 push。
 
-用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 已有 users/rules/devices 行；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
+**剩余（需用户参与）**：
+1. 用户在模拟器过一遍 App（已是干净状态，可直接按 `docs/submission.md` 第 1 节脚本走）。盯价那句要点出**当前卡片上的完整标题**，否则 Llama 可能挑错商品（本次把 "Lofree typewriter keyboard" 理解成已买的 Wired 款）。
+2. 录视频：构建命令见下方"命令"，加 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`。推送横幅只显示几秒，录屏要连着拍。simulate 用 `curl -X POST .../debug/watches/<id>/simulate -H "x-app-key: …" -H "x-user-id: 88A7DF07-…" -d '{"price":58}'`（App 内 Debug 按钮同效）。
+3. TestFlight 公开链接：在 ASC → TestFlight → 外部测试 "Judges" → 添加构建版本 1 → 填测试信息（Beta 描述、反馈邮箱、联系人、**电话**）→ 提交 Beta App Review（助手的权限策略不允许代点提交；审核通常 1 天内）→ 群组"设置"里开启公开链接 → 链接填进 README 与 submission.md。内部群组 Tester 可把用户自己加为测试员装到真机。
+4. Devpost：内置浏览器 tab 已停在 Cloudflare 人机验证，用户点一下后助手继续 Join / 建草稿 / 填文案（`docs/submission.md` 第 2 节）。截止 **11-12 12:00 PT**，目标 11-10。
+5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
 
-**会话习惯**：另一个会话可能在 MustPlay 上并行开发（Qloo Scout），用的是 iPhone 18 Pro Max 模拟器和 8788 端口；**不要 `pkill -f "wrangler dev"`**（会误杀对方），只按 PID 或 `pgrep -f "Gofer/worker"` 杀自己的。本地 Worker 用 8787。
+用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 有 users/rules/devices 行（两台设备 token）；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
+
+**会话习惯**：另一个会话可能在 MustPlay 上并行开发，用的是 iPhone 18 Pro Max 模拟器和 8788 端口；**不要 `pkill -f "wrangler dev"`**，只按 PID 或 `pgrep -f "Gofer/worker"` 杀自己的。本地 Worker 用 8787。**模拟器工具每次调用都要显式传 device=250FDF0D-…**，不传会落到 18 Pro Max 上（本次误点了一次 MustPlay）。
 
 
 PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`。截止 **2026-11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
@@ -24,9 +30,9 @@ PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`�
 ```
 cd worker && npm install && npm run dev            # 本地 8787
 cd worker && ./scripts/smoke-paypal.sh             # curl 级沙盒下单→审批→capture
-cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer -destination 'platform=iOS Simulator,id=250FDF0D-DF15-4DC0-B569-B17ACF39C22A' -derivedDataPath build/dd -allowProvisioningUpdates build   # 带签名，推送才能注册；装机 xcrun simctl install 250FDF0D-DF15-4DC0-B569-B17ACF39C22A build/dd/Build/Products/Debug-iphonesimulator/Gofer.app
+cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer -destination 'platform=iOS Simulator,id=250FDF0D-DF15-4DC0-B569-B17ACF39C22A' -derivedDataPath build/dd -allowProvisioningUpdates API_BASE_URL=https://gofer.kbfoxtk.workers.dev build   # 带签名，推送才能注册；录视频/演示直连线上要加 API_BASE_URL 覆盖；装机 xcrun simctl install 250FDF0D-DF15-4DC0-B569-B17ACF39C22A build/dd/Build/Products/Debug-iphonesimulator/Gofer.app
 ```
-新增 Swift 文件后必须 `xcodegen generate`。模拟器用 **iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`**（18 Pro Max 归另一会话的 MustPlay 用）。
+新增 Swift 文件后必须 `xcodegen generate`（它会重写 Info.plist 和 entitlements，所有键必须写在 project.yml 里）。TestFlight 上传：`xcodebuild ... -configuration Release -destination 'generic/platform=iOS' -archivePath build/Gofer.xcarchive CODE_SIGNING_ALLOWED=NO archive` 然后 `xcodebuild -exportArchive -archivePath build/Gofer.xcarchive -exportOptionsPlist Config/ExportOptions.plist -exportPath build/export -allowProvisioningUpdates`（destination=upload）。模拟器用 **iPhone 18 Pro `250FDF0D-DF15-4DC0-B569-B17ACF39C22A`**（18 Pro Max 归另一会话的 MustPlay 用）。
 
 ## 账号（用户已建）
 - PayPal 开发者后台已有沙盒 App "Default Application"；沙盒账号：自动生成的 C2（中国）一对 + 用户手建的美区 Business/Personal 一对。**演示一律用美区账号**
