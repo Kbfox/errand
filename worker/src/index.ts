@@ -60,7 +60,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   }
 
   if (p === "/channel3/search" && req.method === "POST") {
-    return json(await channel3.search(env, (await req.json()) as channel3.SearchInput));
+    const input = (await req.json()) as channel3.SearchInput & { raw?: boolean };
+    return json(input.raw ? await channel3.search(env, input) : await channel3.searchCandidates(env, input));
   }
 
   if (p === "/agent" && req.method === "POST") {

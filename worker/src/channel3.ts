@@ -34,3 +34,70 @@ async function c3<T>(env: Env, path: string, body: unknown, userId?: string): Pr
 export function search(env: Env, input: SearchInput, userId?: string): Promise<unknown> {
   return c3(env, "/search", { limit: 10, ...input }, userId);
 }
+
+// ---- Response model (observed from a real /v1/search call, 2026-10-13) ----
+export interface C3Product {
+  id: string;
+  title: string;
+  description?: string;
+  brands?: { id: string; name: string }[];
+  images?: { url: string; cleaned_url?: string; is_main_image?: boolean }[];
+  category?: { slug: string; title: string };
+  key_features?: string[];
+  offers?: {
+    url: string;
+    domain: string;
+    price: { price: number; compare_at_price?: number | null; currency: string };
+    availability: string;
+    condition?: string;
+  }[];
+  structured_attributes?: Record<string, string[]>;
+  ratings?: unknown;
+}
+
+export interface SearchResponse {
+  products: C3Product[];
+  next_page_token?: string;
+}
+
+/** What the agent sees and what the app renders: small, flat, enough to explain a choice. */
+export interface Candidate {
+  id: string;
+  title: string;
+  brand?: string;
+  price: number;
+  compareAt?: number;
+  currency: string;
+  store: string;
+  availability: string;
+  image?: string;
+  buyUrl: string;
+  features: string[];
+  attributes: Record<string, string>;
+}
+
+export function toCandidate(p: C3Product): Candidate | null {
+  const offer = (p.offers ?? []).filter((o) => o.availability === "InStock").sort((a, b) => a.price.price - b.price.price)[0] ?? p.offers?.[0];
+  if (!offer) return null;
+  const attrs: Record<string, string> = {};
+  for (const [k, v] of Object.entries(p.structured_attributes ?? {}).slice(0, 8)) attrs[k] = v.join(", ");
+  return {
+    id: p.id,
+    title: p.title,
+    brand: p.brands?.[0]?.name,
+    price: offer.price.price,
+    compareAt: offer.price.compare_at_price ?? undefined,
+    currency: offer.price.currency,
+    store: offer.domain,
+    availability: offer.availability,
+    image: (p.images?.find((i) => i.is_main_image) ?? p.images?.[0])?.cleaned_url ?? p.images?.[0]?.url,
+    buyUrl: offer.url,
+    features: (p.key_features ?? []).slice(0, 4),
+    attributes: attrs,
+  };
+}
+
+export async function searchCandidates(env: Env, input: SearchInput, userId?: string): Promise<Candidate[]> {
+  const res = (await search(env, input, userId)) as SearchResponse;
+  return res.products.map(toCandidate).filter((c): c is Candidate => c !== null);
+}
