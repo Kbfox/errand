@@ -26,7 +26,7 @@ targets:
   Gofer:
     type: application
     platform: iOS
-    sources: [App, Views, Services, Models]
+    sources: [App, Views, Services, Models, Resources]
     info:
       path: App/Info.plist
       properties:
@@ -41,4 +41,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gofer.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
