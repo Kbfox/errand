@@ -30,6 +30,11 @@ cd ios && xcodegen generate && xcodebuild -project Errand.xcodeproj -scheme Erra
 - Channel3 自带 Price Tracking 接口（start/stop/history），盯价不用自己轮询
 - 沙盒 vault_id / customer id 记在对话里，不入库；真实实现要按用户持久化到 D1
 
+## 线上环境（2026-10-13 部署）
+- Worker：**https://errand.kbfoxtk.workers.dev**（`cd worker && npm run deploy`）。远程 D1 已迁移（`wrangler d1 migrations apply errand --remote`），4 个 secret 已设（PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / CHANNEL3_API_KEY / APP_KEY，值取自 .dev.vars）。`PUBLIC_BASE_URL` 在 wrangler.toml 指向线上，本地由 .dev.vars 覆盖为 localhost。
+- iOS：`API_BASE_URL` 按配置区分，Debug=localhost:8787，Release=线上（project.yml settings.configs）。TestFlight 用 Release。
+- 线上验证：/health ok、Channel3 搜索 ok、/agent 一轮（Workers AI）ok。
+
 ## 进度
 - **10-13 晚：第 2 周目标提前达成**。模拟器里从示例需求 → 3 张候选卡 → 点 Buy → agent 建单 → App 内 PayPal 登录付款 → 跳回 → 绿色收据卡，订单 4SS16439R7402661J COMPLETED $79.97，且 Vault 已存。
 - **10-13 深夜：第 3 周主体完成**。D1（users/rules/orders/watches）、规则引擎 `commerce.decide`、规则内用 vault_id 无人值守付款、盯价 `watch.evaluate`（cron 每 15 分钟 + `/debug/watches/:id/simulate` 强制价格走同一条代码路径）、iOS 三个 Tab（Errand / Orders / Rules）。模拟器实测：Rules 页设 $100/$500 → 聊天里 $76.90 的键盘直接 "Bought for you with PayPal"，订单 93G362961A2581028。

@@ -11,6 +11,11 @@ configFiles:
   Debug: Config/Secrets.xcconfig
   Release: Config/Secrets.xcconfig
 settings:
+  configs:
+    Debug:
+      API_BASE_URL: http://localhost:8787          # wrangler dev
+    Release:
+      API_BASE_URL: https://errand.kbfoxtk.workers.dev
   base:
     SWIFT_VERSION: "5"
     DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
