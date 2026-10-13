@@ -84,6 +84,7 @@ export async function createOrder(env: Env, input: CreateOrderInput): Promise<Pa
     : {
         experience_context: {
           brand_name: "Errand",
+          locale: "en-US",
           user_action: "PAY_NOW",
           shipping_preference: "NO_SHIPPING",
           return_url: returnBase,
