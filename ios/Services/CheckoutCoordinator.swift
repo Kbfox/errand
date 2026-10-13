@@ -12,31 +12,8 @@ final class CheckoutCoordinator: NSObject, ASWebAuthenticationPresentationContex
         let orderID: String?
     }
 
-    struct CreateOrderRequest: Encodable {
-        struct Item: Encodable {
-            struct Amount: Encodable { let currency_code: String; let value: String }
-            let name: String
-            let unit_amount: Amount
-            let quantity: String
-        }
-        let items: [Item]
-    }
-
-    struct CreateOrderResponse: Decodable {
-        let id: String
-        let status: String
-        let approve: String?
-    }
-
-    func pay(name: String, usd: String) async throws {
-        let body = CreateOrderRequest(items: [.init(name: name, unit_amount: .init(currency_code: "USD", value: usd), quantity: "1")])
-        let res = try await APIClient.shared.post("/paypal/orders", body: body, as: CreateOrderResponse.self)
-        guard let approve = res.approve, let url = URL(string: approve) else { throw APIClient.APIError.http(-2, "no approve link") }
-        try await open(url)
-    }
-
     @MainActor
-    private func open(_ url: URL) async throws {
+    func open(_ url: URL) async throws {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "errand") { [weak self] cb, err in
                 if let cb { self?.handle(cb) }

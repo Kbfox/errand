@@ -21,7 +21,7 @@ targets:
   Errand:
     type: application
     platform: iOS
-    sources: [App, Views, Services]
+    sources: [App, Views, Services, Models]
     info:
       path: App/Info.plist
       properties:

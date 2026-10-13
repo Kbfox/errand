@@ -16,7 +16,7 @@ export interface SearchInput {
   };
 }
 
-async function c3<T>(env: Env, path: string, body: unknown, userId?: string): Promise<T> {
+async function c3<T>(env: Env, path: string, body: unknown, userId?: string, attempt = 0): Promise<T> {
   const res = await fetch(`${env.CHANNEL3_BASE_URL}${path}`, {
     method: "POST",
     headers: {
@@ -27,6 +27,11 @@ async function c3<T>(env: Env, path: string, body: unknown, userId?: string): Pr
     body: JSON.stringify(body),
   });
   const text = await res.text();
+  if (res.status >= 500 && attempt < 2) {
+    // Channel3 returns intermittent 500s for requests that succeed on retry (observed 2026-10-13).
+    await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+    return c3<T>(env, path, body, userId, attempt + 1);
+  }
   if (!res.ok) throw new HttpError(502, `channel3 ${path} -> ${res.status}`, text);
   return JSON.parse(text) as T;
 }
