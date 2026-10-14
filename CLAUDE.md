@@ -10,7 +10,7 @@
 **剩余（需用户参与）**：
 1. 用户在模拟器过一遍 App（已是干净状态，可直接按 `docs/submission.md` 第 1 节脚本走）。盯价那句要点出**当前卡片上的完整标题**，否则 Llama 可能挑错商品（本次把 "Lofree typewriter keyboard" 理解成已买的 Wired 款）。
 2. 录视频：`scripts/record-demo.sh prep` 重置数据+时钟，`start` 开录（Ctrl-C 停），`watches` 查 watch id，`simulate <id> [price]` 强制降价，`cfr <raw.mov>` 转恒定帧率再剪。构建命令见下方"命令"，加 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`。推送横幅只显示几秒，录屏要连着拍。simulate 用 `curl -X POST .../debug/watches/<id>/simulate -H "x-app-key: …" -H "x-user-id: 88A7DF07-…" -d '{"price":58}'`（App 内 Debug 按钮同效）。
-3. TestFlight：构建 1.0 (1) 已加入外部群组 Judges 并**提交 Beta App Review（10-13 02:45，正在等待审核）**；测试信息已填（描述、反馈邮箱、营销 URL、联系人含电话、审核备注含沙盒账号）。公开链接 **https://testflight.apple.com/join/wfkdTAhA**，审核通过后才可加入；已写进 README / submission.md / Devpost。审核结果看 ASC → TestFlight → Judges → 构建版本；被拒就按备注补信息重交。
+3. TestFlight：**完成**。构建 1.0 (1) 已通过 Beta App Review（10-13），公开链接 **https://testflight.apple.com/join/wfkdTAhA** 已生效，已写进 README / submission.md / Devpost。内部群组 Tester 已含用户本人（构建已推到其 iPhone 16 Pro Max）。再出新构建：project.yml 的 CURRENT_PROJECT_VERSION +1 → archive/export 上传 → ASC → Judges → 添加构建版本（已审核过的 App 后续构建一般免审或很快）。
 4. Devpost：已注册并建好草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，状态 DRAFT，未提交）。已填：名称、标语、About 全文、Built with 12 个标签、Try it out（GitHub + /health + TestFlight）、Additional info 全部文字字段（demo URL 已是 TestFlight 链接，评委测试说明含 TestFlight）。**用户要做**：Project details 页填 YouTube 视频链接；Additional info 页勾 3 个资格声明框、把测试说明里的 `<email> / <password>` 换成美区沙盒个人账号；Submit 页勾条款后点 Submit project。Devpost 的 Cloudflare / reCAPTCHA 都要用户在面板里点。截止 **11-12 12:00 PT**，目标 11-10。
 5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
 

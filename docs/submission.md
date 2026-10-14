@@ -39,7 +39,7 @@ Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Tim
 
 **Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, workers-ai, typescript, paypal, paypal-orders-api, paypal-vault, channel3, llama
 
-**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `https://testflight.apple.com/join/wfkdTAhA` (external group "Judges" on ASC app "Gofer Shopping Agent" 6822217457; build 1.0 (1) submitted for Beta App Review 2026-10-13, link activates on approval) · Backend health `https://gofer.kbfoxtk.workers.dev/health`
+**Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `https://testflight.apple.com/join/wfkdTAhA` (external group "Judges" on ASC app "Gofer Shopping Agent" 6822217457; build 1.0 (1) approved by Beta App Review 2026-10-13, link live) · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
 **Video:** `<YouTube link>`
 
@@ -102,7 +102,7 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 - [ ] Video uploaded to YouTube (public or unlisted), ≤ 3:00, link in form
 - [ ] GitHub repo public, LICENSE visible in About
 - [ ] README placeholders filled (video, TestFlight)
-- [ ] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) waiting for Beta App Review since 2026-10-13; check ASC → TestFlight → Judges); or clear "build from source" instructions confirmed on a clean machine
+- [x] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) approved 2026-10-13). New builds: bump CURRENT_PROJECT_VERSION in project.yml, archive + export (upload), then add the build to Judges in ASC
 - [ ] Worker deployed, `/health` ok, cron enabled
 - [ ] Sandbox personal account credentials in testing notes
 - [ ] Prize categories ticked: Agentic Commerce, PayPal + AI, Demo Delivery, Channel3
