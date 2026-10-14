@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gofer privacy policy</title><link rel="icon" href="icon.png"><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><img src="icon.png" alt=""><a href="./">Gofer</a></header>
+<h1>Privacy policy</h1>
+<p class="muted">Effective 13 October 2026</p>
+
+<p>Gofer is a shopping agent for iPhone. This policy explains what the app sends to our server and to the services it uses. Gofer has no accounts, no advertising and no third-party analytics, and it does not track you across apps or websites.</p>
+
+<h2>What we process</h2>
+<table>
+<tr><th>Data</th><th>Why</th><th>Where it goes</th></tr>
+<tr><td>A random ID created on your device</td><td>Links your rules, orders and watches to your install. It is not tied to your name, email or Apple ID.</td><td>Our server (Cloudflare Workers + D1)</td></tr>
+<tr><td>What you type to Gofer</td><td>To understand your request and search for products</td><td>Our server, the language model provider (DeepSeek) and the product search provider (Channel3). Not stored by us after the request.</td></tr>
+<tr><td>A photo you choose to search with (optional)</td><td>To find similar products</td><td>Our server and Channel3 image search. Not stored by us.</td></tr>
+<tr><td>Orders: product, price, retailer, PayPal order ID, status, how it was authorised</td><td>To show your order history and enforce your monthly cap</td><td>Our server</td></tr>
+<tr><td>Spending rules and price watches</td><td>To decide when Gofer may buy without asking</td><td>Our server</td></tr>
+<tr><td>A PayPal vault token, if you allow PayPal to save your wallet</td><td>To charge your saved PayPal wallet within your rules</td><td>Our server. The token is issued by PayPal; Gofer never sees your card or bank details.</td></tr>
+<tr><td>Push notification token</td><td>To tell you when a watched price was bought or needs approval</td><td>Our server and Apple Push Notification service</td></tr>
+</table>
+
+<h2>Payments</h2>
+<p>Payments are handled by PayPal. You sign in and approve payments on PayPal's own pages; Gofer does not receive your PayPal password or payment card details. This version uses the PayPal sandbox, so no real money is charged. PayPal's handling of your data is covered by the <a href="https://www.paypal.com/myaccount/privacy/privacyhub">PayPal privacy statement</a>.</p>
+
+<h2>Service providers</h2>
+<ul>
+<li><strong>Cloudflare</strong> hosts our server and database.</li>
+<li><strong>DeepSeek</strong> processes the text of your requests to decide which products to search for and how to describe them.</li>
+<li><strong>Channel3</strong> searches retailer catalogues and returns product details and prices.</li>
+<li><strong>PayPal</strong> processes payments and stores your saved wallet.</li>
+<li><strong>Apple</strong> delivers push notifications.</li>
+</ul>
+<p>We do not sell or share your data for advertising.</p>
+
+<h2>Retention and deletion</h2>
+<p>Order, rule, watch and device records are kept until you ask us to delete them or the demo service is shut down. Settings → Data → "Reset this device" makes the app forget your ID and start fresh; deleting the app does the same. To delete the server-side records, <a href="https://github.com/Kbfox/gofer/issues/new">open an issue</a> with the device ID shown in Settings and we will remove them within 30 days. You can turn off automatic purchases at any time by setting the limit to "Always ask".</p>
+
+<h2>Children</h2>
+<p>Gofer is not directed at children under 13 and we do not knowingly collect their data.</p>
+
+<h2>Changes</h2>
+<p>If this policy changes, the new version will be posted on this page with a new effective date.</p>
+
+<h2>Contact</h2>
+<p><a href="https://github.com/Kbfox/gofer/issues/new">Open an issue on GitHub</a>.</p>
+
+<footer>© 2026 Kbfox · <a href="support.html">Support</a></footer>
+</main></body></html>

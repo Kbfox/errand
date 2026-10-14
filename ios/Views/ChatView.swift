@@ -149,6 +149,8 @@ private struct EmptyState: View {
             }
             .padding(14)
             .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+            Label("Demo: payments use the PayPal sandbox. No real money moves and no real orders are placed.", systemImage: "testtube.2")
+                .font(.caption).foregroundStyle(.secondary)
             Text("Try one").font(.footnote.weight(.semibold)).foregroundStyle(.secondary)
             VStack(spacing: 8) {
                 ForEach(ChatModel.suggestions, id: \.self) { s in

@@ -38,9 +38,11 @@ struct SettingsView: View {
                     Button("Reset this device", role: .destructive) { confirmReset = true }
                 }
                 Section("About") {
+                    Link(destination: URL(string: "https://kbfox.github.io/gofer/privacy.html")!) { Label("Privacy policy", systemImage: "hand.raised") }
+                    Link(destination: URL(string: "https://kbfox.github.io/gofer/support.html")!) { Label("Support", systemImage: "questionmark.circle") }
                     Link(destination: URL(string: "https://github.com/Kbfox/gofer")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
-                    Text("Built for the PayPal AI Hackathon 2026. Product data by Channel3. Agent runs on Cloudflare Workers AI.")
+                    Text("Built for the PayPal AI Hackathon 2026. Product data by Channel3. The agent runs on DeepSeek.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
