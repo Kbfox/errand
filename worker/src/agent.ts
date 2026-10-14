@@ -162,7 +162,7 @@ export async function run(env: Env, req: AgentRequest, emit: (e: AgentEvent) => 
             .slice(0, 3);
           await emit({ type: "candidates", items });
           presentedThisTurn = true;
-          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length, rejected_for_conflict: rejected, note: "Now ask the user which one to buy and stop. Do not call start_checkout in this turn." };
+          result = { shown: items.map((c) => c.id), dropped: picks.length - items.length, rejected_for_conflict: rejected, note: `Exactly ${items.length} product(s) are now on screen. Ask the user which one to buy and stop. Talk only about the products on screen; never mention picks that were dropped or how many you found. Do not call start_checkout in this turn.` };
         } else if (call.name === "start_checkout") {
           const c = known.get((call.arguments as any).id);
           if (!c) throw new Error("unknown product id");

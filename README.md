@@ -49,7 +49,7 @@ Independently of the prompt, the agent loop refuses `start_checkout` unless the 
 ```
 iPhone app (SwiftUI, iOS 17+)                 Cloudflare Worker (TypeScript)
 ┌──────────────────────────────┐              ┌──────────────────────────────────────────┐
-│ Gofer tab   chat + cards    │  POST /agent │ agent.ts   tool loop on Workers AI        │
+│ Gofer tab   chat + cards    │  POST /agent │ agent.ts   tool loop on DeepSeek          │
 │ Orders tab   orders, watches │ ───(SSE)───▶ │   search_products → Channel3              │
 │ Rules tab    limits, wallet  │              │   present_candidates (filtered, ≤3)       │
 │                              │ ◀─────────── │   start_checkout  → commerce.buy()        │
@@ -61,12 +61,12 @@ iPhone app (SwiftUI, iOS 17+)                 Cloudflare Worker (TypeScript)
                                               │ D1: users · rules · orders · watches      │
                                               └──────────────────────────────────────────┘
                                                    │              │               │
-                                              PayPal Sandbox   Channel3 API   Workers AI
-                                              (Orders v2,      (products,     (Llama 3.3 70B,
+                                              PayPal Sandbox   Channel3 API   DeepSeek
+                                              (Orders v2,      (products,     (deepseek-chat,
                                                Vault, track)    prices)        tool calling)
 ```
 
-- **LLM:** Cloudflare Workers AI by default (no API key, free tier). `src/llm.ts` is provider-agnostic; set `LLM_PROVIDER=openai-compatible` with `LLM_BASE_URL` and a `LLM_API_KEY` secret to use DeepSeek, OpenAI, Qwen or any compatible endpoint.
+- **LLM:** DeepSeek (`deepseek-chat`) through its OpenAI-compatible API (`LLM_PROVIDER=openai-compatible`, `LLM_BASE_URL=https://api.deepseek.com`, secret `LLM_API_KEY`). `src/llm.ts` is provider-agnostic: set `LLM_PROVIDER=workers-ai` to run on Cloudflare Workers AI (Llama 3.3 70B, no key, but the free tier is only about 10k neurons a day), or point it at OpenAI, Qwen or any compatible endpoint.
 - **Agent events** (`status`, `candidates`, `message`, `checkout`, `purchased`, `watching`, `error`, `done`) stream over server-sent events so the UI updates as the agent works.
 - **Deterministic guards around the model:** a conflict filter (`constraints.ts`) drops any shortlisted product whose structured attributes contradict the request (wireless when you asked for wired, brown switches when you asked for blue), and the purchase guard in `agent.ts` only lets money move on an explicit user choice.
 - **Push:** the Worker signs an ES256 provider token with the team's APNs key and posts to APNs directly; devices register their token at `POST /devices`.
@@ -111,7 +111,7 @@ Debug builds talk to `http://localhost:8787`; Release builds talk to the deploye
 cd worker
 npx wrangler d1 create errand         # once; put the id in wrangler.toml
 npx wrangler d1 migrations apply errand --remote
-npm run secrets                       # PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY (+ LLM_API_KEY if not Workers AI)
+npm run secrets                       # PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, CHANNEL3_API_KEY, APP_KEY, then: npx wrangler secret put LLM_API_KEY
 npx wrangler secret put APNS_KEY < AuthKey_XXXX.p8   # optional: enables push; set APNS_KEY_ID / APNS_TEAM_ID / APNS_TOPIC in wrangler.toml
 npm run deploy
 ```
@@ -141,7 +141,7 @@ worker/
   src/watch.ts      price-watch evaluation (cron and simulate share it)
   src/paypal.ts     OAuth token cache, Orders v2 create/capture/get, vault params, /track
   src/channel3.ts   search, product detail, price tracking, Candidate normaliser
-  src/llm.ts        Workers AI / OpenAI-compatible chat with tools
+  src/llm.ts        OpenAI-compatible (DeepSeek) / Workers AI chat with tools
   src/db.ts         D1 access
   migrations/       schema
   scripts/          smoke-paypal.sh
@@ -157,7 +157,7 @@ docs/plan.md        product definition and schedule
 
 - **PayPal APIs used:** OAuth2, Orders v2 (create, capture, get, track), Vault via `payment_source.paypal.attributes.vault` and `vault_id`, sandbox webhooks endpoint stubbed.
 - **Sponsor tool:** Channel3 for product search, structured attributes, cross-retailer offers, product detail and price tracking.
-- **AI:** Cloudflare Workers AI (Llama 3.3 70B) with function calling; provider swappable.
+- **AI:** DeepSeek (`deepseek-chat`) with function calling; provider swappable (Cloudflare Workers AI / Llama 3.3 70B was used until its free daily quota ran out during testing).
 - **Built solo in October 2026**, with Claude Code as pair programmer.
 
 ## License

@@ -7,11 +7,11 @@
 - **TestFlight**：App Store Connect 记录已建，名称 **Gofer Shopping Agent**（"Gofer" 被占用），ASC App ID **6822217457**，SKU gofer-ios，主语言 en-US。Build **1.0 (1)** 已上传并处理完（归档用 `CODE_SIGNING_ALLOWED=NO`，导出 `-allowProvisioningUpdates` 自动签名；Info.plist 需 `UISupportedInterfaceOrientations` + `UIRequiresFullScreen`，已加进 project.yml）。内部群组 **Tester**（自动分发，尚未加测试员）和外部群组 **Judges** 已建。
 - 代码已提交（9eb021b），本次会话结束前会 push。
 
-**剩余（需用户参与）**：
-1. 用户在模拟器过一遍 App（已是干净状态，可直接按 `docs/submission.md` 第 1 节脚本走）。盯价那句要点出**当前卡片上的完整标题**，否则 Llama 可能挑错商品（本次把 "Lofree typewriter keyboard" 理解成已买的 Wired 款）。
-2. 录视频：`scripts/record-demo.sh prep` 重置数据+时钟，`start` 开录（Ctrl-C 停），`watches` 查 watch id，`simulate <id> [price]` 强制降价，`cfr <raw.mov>` 转恒定帧率再剪。构建命令见下方"命令"，加 `API_BASE_URL=https://gofer.kbfoxtk.workers.dev`。推送横幅只显示几秒，录屏要连着拍。simulate 用 `curl -X POST .../debug/watches/<id>/simulate -H "x-app-key: …" -H "x-user-id: 88A7DF07-…" -d '{"price":58}'`（App 内 Debug 按钮同效）。
+**剩余（需用户参与）**：（10-13 晚更新）
+1. ~~过一遍 App~~ 用户 10-13 已确认无问题。
+2. **视频已剪好**：`~/Desktop/gofer-video/Gofer-demo.mp4`（2:31，1920×1080，字幕烧录、无旁白；剪辑表与做法见 `docs/submission.md` "Final take"）。**用户要做**：上传 YouTube（公开或不公开列出；横屏 >60s 不会被当成 Shorts），把链接给助手填 Devpost / README / submission.md。重录用 `scripts/record-demo.sh`。
 3. TestFlight：**完成**。构建 1.0 (1) 已通过 Beta App Review（10-13），公开链接 **https://testflight.apple.com/join/wfkdTAhA** 已生效，已写进 README / submission.md / Devpost。内部群组 Tester 已含用户本人（构建已推到其 iPhone 16 Pro Max）。再出新构建：project.yml 的 CURRENT_PROJECT_VERSION +1 → archive/export 上传 → ASC → Judges → 添加构建版本（已审核过的 App 后续构建一般免审或很快）。
-4. Devpost：已注册并建好草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，状态 DRAFT，未提交）。已填：名称、标语、About 全文、Built with 12 个标签、Try it out（GitHub + /health + TestFlight）、Additional info 全部文字字段（demo URL 已是 TestFlight 链接，评委测试说明含 TestFlight）。**用户要做**：Project details 页填 YouTube 视频链接；Additional info 页勾 3 个资格声明框、把测试说明里的 `<email> / <password>` 换成美区沙盒个人账号；Submit 页勾条款后点 Submit project。Devpost 的 Cloudflare / reCAPTCHA 都要用户在面板里点。截止 **11-12 12:00 PT**，目标 11-10。
+4. Devpost：**About / 技术要求说明里仍写 Workers AI + Llama，需改成 DeepSeek**（repo 里 submission.md 第 2 节已改，照抄即可）。已注册并建好草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，状态 DRAFT，未提交）。已填：名称、标语、About 全文、Built with 12 个标签、Try it out（GitHub + /health + TestFlight）、Additional info 全部文字字段（demo URL 已是 TestFlight 链接，评委测试说明含 TestFlight）。**用户要做**：Project details 页填 YouTube 视频链接；Additional info 页勾 3 个资格声明框、把测试说明里的 `<email> / <password>` 换成美区沙盒个人账号；Submit 页勾条款后点 Submit project。Devpost 的 Cloudflare / reCAPTCHA 都要用户在面板里点。截止 **11-12 12:00 PT**，目标 11-10。
 5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
 
 用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 有 users/rules/devices 行（两台设备 token）；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
@@ -38,8 +38,8 @@ cd ios && xcodegen generate && xcodebuild -project Gofer.xcodeproj -scheme Gofer
 - PayPal 开发者后台已有沙盒 App "Default Application"；沙盒账号：自动生成的 C2（中国）一对 + 用户手建的美区 Business/Personal 一对。**演示一律用美区账号**
 - Channel3、Qloo key：见对话进度
 
-## LLM 方案（2026-10-13 定稿）
-用户没有 Anthropic key，agent 改用 **Cloudflare Workers AI**（`[ai] binding = "AI"`，模型 `@cf/meta/llama-3.3-70b-instruct-fp8-fast`，无需 key，走 Cloudflare 免费额度）。`src/llm.ts` 是 provider 无关层，`LLM_PROVIDER=openai-compatible` + `LLM_BASE_URL` + secret `LLM_API_KEY` 可切 DeepSeek / OpenAI / Qwen。坑：Workers AI 的 assistant 消息 content 不能为 null，要给 ""；SSE 后台任务必须 `ctx.waitUntil`，否则返回响应后被回收，流只剩第一个事件。
+## LLM 方案（10-13 晚改为 DeepSeek，同 MustPlay）
+线上 agent 用 **DeepSeek**：`wrangler.toml` 的 `LLM_PROVIDER=openai-compatible`、`LLM_BASE_URL=https://api.deepseek.com`、`LLM_MODEL=deepseek-chat`，secret `LLM_API_KEY`（用户 10-13 已 `wrangler secret put`）。原因：Workers AI 免费额度每天 1 万 neurons（UTC 0 点重置），用户过一遍 App 就用完（AiError 4006），且 DeepSeek 理由文案明显更好、一轮约 13 秒。回退 Workers AI 只需改回三个 vars（`[ai] binding = "AI"` 仍在）。本地 `.dev.vars` 若要用 DeepSeek 需自己加 `LLM_API_KEY`。`src/llm.ts` 是 provider 无关层。坑：Workers AI 的 assistant 消息 content 不能为 null，要给 ""；SSE 后台任务必须 `ctx.waitUntil`，否则返回响应后被回收，流只剩第一个事件。present_candidates 的工具结果要告诉模型"屏幕上恰好 N 个"，否则它会说"找到三个，只显示两个"。
 `src/agent.ts`：工具 search_products / present_candidates / start_checkout，最多 6 步，事件 status / candidates / message / checkout / error / done。多轮：客户端把上一轮的 candidates 原样回传。本地 `wrangler dev` 下 AI binding 走远程，需要 wrangler 已登录。
 
 ## 第 1 周验证结果（2026-10-13，沙盒，美区账号）

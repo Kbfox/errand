@@ -31,13 +31,18 @@ Shot rules: no third-party music; product images come from Channel3 results (ret
 ### Recording log (2026-10-13)
 Raw take: `~/Desktop/errand-video/raw.mov` (414 s, simctl recordVideo, VFR). Timestamps in the raw file are irregular, so **first transcode to CFR** (`ffmpeg -i raw.mov -vf fps=30,scale=1080:-2 cfr.mp4`) and cut from that; seeking the raw file lands on wrong frames. Cut list on the CFR timeline (seconds): `0-5, 12.5-29, 52.5-63.5, 92.5-127.5, 171-181, 209-223, 239-253, 275.5-282, 299.5-319.5, 334.5-347.5, 353.5-360.5, 367.5-376.5` → `Gofer-demo.mp4`, 161 s, 1080×2346, no audio yet. Known soft spots: the first PayPal sheet was barely captured by the recorder (dialog → receipt), the second purchase shows the full PayPal page; the Orders page did not refresh in time after Simulate, the result shows on the final Orders screen. Narration/captions still to add (script above).
 
+### Final take (2026-10-13 17:35 PDT) → `~/Desktop/gofer-video/Gofer-demo.mp4`
+1920×1080, 30 fps, 2:31, H.264 + silent AAC, captions burned in (no narration). Phone recording on the left with a rounded mask, step captions on the right, title card, "Under the hood" code card (`decide()` + checkout guard) and end card. Raw: `~/Desktop/gofer-raw.mov` (458 s, VFR); CFR copy `~/Desktop/gofer-video/cfr.mp4`; cards rendered by a Swift/AppKit script (ffmpeg here has no drawtext); per-shot pieces in `~/Desktop/gofer-video/pieces/`.
+Cut list on the CFR timeline (caption: start–end): c1 6.0–16.6 · c2 63.6–74.0 · c3 99.6–103.0, 123.0–127.5, 130.5–135.0 · c4 148.0–151.5, 155.5–167.0 · c5 181.0–190.5, 209.0–220.5 · c6 246.5–255.5 · c7 277.0–284.0, 287.5–296.5 (push banner ≈ 288–295) · c8 316.5–329.0, 344.0–346.5, 352.0–359.0, 371.5–374.0, 389.0–399.5 · c9 413.0–419.0. The PayPal login (simulator passcode / password) was cut. Wall-clock marks do not match the raw file's timestamps (simctl only writes frames on change); map shots visually with contact sheets.
+Lessons: Workers AI free tier (10k neurons/day) ran out mid-session → switched to DeepSeek; a stuck "Host recording is already in progress" needs `simctl shutdown/boot` of the device; run the recorder with nohup so it survives tool calls.
+
 ## 2. Devpost fields
 
 **Project name:** Gofer
 
 **Tagline (≤ 60 chars):** Tell it what you need. It finds it, you approve, it pays.
 
-**Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, workers-ai, typescript, paypal, paypal-orders-api, paypal-vault, channel3, llama
+**Built with (tags):** swift, swiftui, ios, cloudflare-workers, cloudflare-d1, typescript, paypal, paypal-orders-api, paypal-vault, channel3, deepseek, apns
 
 **Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `https://testflight.apple.com/join/wfkdTAhA` (external group "Judges" on ASC app "Gofer Shopping Agent" 6822217457; build 1.0 (1) approved by Beta App Review 2026-10-13, link live) · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
@@ -63,7 +68,7 @@ Gofer is an iPhone agent that buys things for you with PayPal.
 
 ## How we built it
 - **iOS**: SwiftUI, iOS 17+, XcodeGen. Chat with streaming agent events, product cards, receipts, Orders and Rules tabs. PayPal approval runs in `ASWebAuthenticationSession` and returns through a custom URL scheme.
-- **Backend**: Cloudflare Worker (TypeScript) with D1. The agent is a tool loop on **Cloudflare Workers AI** (Llama 3.3 70B, function calling) with tools `search_products`, `present_candidates`, `start_checkout`, `watch_price`. Events stream to the phone over SSE.
+- **Backend**: Cloudflare Worker (TypeScript) with D1. The agent is a tool loop on **DeepSeek** (`deepseek-chat`, function calling, OpenAI-compatible API; the provider layer can also run Cloudflare Workers AI) with tools `search_products`, `present_candidates`, `start_checkout`, `watch_price`. Events stream to the phone over SSE.
 - **PayPal**: OAuth2, Orders v2 create/capture/get/track, Vault (`store_in_vault: ON_SUCCESS` on the first approved order, `payment_source.paypal.vault_id` for unattended charges).
 - **Channel3**: `/v1/search` with price and availability filters, `/v1/products/{id}` for re-pricing watches, price-tracking subscription.
 - **Rules engine**: `commerce.decide()` on the server decides *approve vs. auto* for every purchase. The model never gets to skip it.
@@ -71,7 +76,7 @@ Gofer is an iPhone agent that buys things for you with PayPal.
 ## Challenges we ran into
 - **An agent that spends money must not be prompt-dependent.** Early on, a single-candidate result made the model skip "which one?" and buy. Now the loop refuses `start_checkout` unless the user's latest message selects a product, and never in the same turn in which candidates were presented. Prompts advise; code decides.
 - **Unattended payments.** Getting PayPal Vault right in the sandbox (vault on first approval, then `vault_id` charges that auto-capture) was the key technical risk; it was the first thing I verified with curl before writing UI.
-- **Small models follow rules loosely.** Llama sometimes presented a product its own reason admitted was wrong ("…but no blue switches"). A server-side filter drops any pick whose reason negates a constraint.
+- **Models follow rules loosely.** Llama 3.3 on Workers AI (our first provider) sometimes presented a product its own reason admitted was wrong ("…but no blue switches"). A server-side filter drops any pick whose reason negates a constraint.
 - **Shipment tracking**: the classic `/v1/shipping/trackers-batch` endpoint returns 403 for a default sandbox app; Orders v2 `/track` works.
 
 ## Accomplishments that we're proud of
@@ -85,7 +90,7 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 ```
 
 ### Product feedback (if the form asks)
-- **Which tools:** PayPal Orders v2, Vault, Orders tracking; Channel3 search/detail/price tracking; Cloudflare Workers AI.
+- **Which tools:** PayPal Orders v2, Vault, Orders tracking; Channel3 search/detail/price tracking; DeepSeek (earlier Cloudflare Workers AI).
 - **What worked:** sandbox OAuth + Orders v2 were running in under an hour; vault-on-approval then `vault_id` charges behave exactly as documented; Channel3's structured attributes make constraint checking possible without scraping.
 - **What needs work:** `/v1/shipping/trackers-batch` 403 for default sandbox apps with no hint that Orders v2 `/track` is the alternative; Channel3 occasionally returns intermittent 500s that succeed on retry; the Workers AI function-calling schema rejects `content: null` on assistant messages (OpenAI convention) with an opaque error.
 - **Onboarding:** PayPal: developer dashboard auto-creates a sandbox app and business/personal accounts, zero-to-first-capture was smooth. Channel3: key + one curl.
