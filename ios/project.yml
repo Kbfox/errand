@@ -19,7 +19,7 @@ settings:
   base:
     SWIFT_VERSION: "5"
     DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
-    CURRENT_PROJECT_VERSION: 2
+    CURRENT_PROJECT_VERSION: 3
     MARKETING_VERSION: 1.0
     TARGETED_DEVICE_FAMILY: "1"
 targets:
@@ -49,5 +49,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gofer.ios
+        TARGETED_DEVICE_FAMILY: "1"   # iPhone only; xcodegen's target default is 1,2, which makes App Store demand iPad screenshots
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
