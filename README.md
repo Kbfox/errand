@@ -6,8 +6,7 @@ Gofer is an iPhone shopping agent built for the **PayPal AI Hackathon 2026**. Yo
 
 It does not recommend and stop. It transacts.
 
-<!-- demo video: add YouTube link before submission -->
-**Demo video:** _coming in week 4_ · **TestFlight:** https://testflight.apple.com/join/wfkdTAhA (iOS 17+) · **Backend:** https://gofer.kbfoxtk.workers.dev/health
+**Demo video:** https://youtu.be/6iqcuK7nwzw · **TestFlight:** https://testflight.apple.com/join/wfkdTAhA (iOS 17+) · **Backend:** https://gofer.kbfoxtk.workers.dev/health
 
 ---
 

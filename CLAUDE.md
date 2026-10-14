@@ -9,7 +9,7 @@
 
 **剩余（需用户参与）**：（10-13 晚更新）
 1. ~~过一遍 App~~ 用户 10-13 已确认无问题。
-2. **视频已剪好**：`~/Desktop/gofer-video/Gofer-demo.mp4`（2:31，1920×1080，字幕烧录、无旁白；剪辑表与做法见 `docs/submission.md` "Final take"）。**用户要做**：上传 YouTube（公开或不公开列出；横屏 >60s 不会被当成 Shorts），把链接给助手填 Devpost / README / submission.md。重录用 `scripts/record-demo.sh`。
+2. **视频完成**：YouTube https://youtu.be/6iqcuK7nwzw（2:31，源文件 `~/Desktop/gofer-video/Gofer-demo.mp4`，剪辑表见 `docs/submission.md` "Final take"），已写进 README / submission.md / Devpost。重录用 `scripts/record-demo.sh`。
 3. TestFlight：**完成**。构建 1.0 (1) 已通过 Beta App Review（10-13），公开链接 **https://testflight.apple.com/join/wfkdTAhA** 已生效，已写进 README / submission.md / Devpost。内部群组 Tester 已含用户本人（构建已推到其 iPhone 16 Pro Max）。再出新构建：project.yml 的 CURRENT_PROJECT_VERSION +1 → archive/export 上传 → ASC → Judges → 添加构建版本（已审核过的 App 后续构建一般免审或很快）。
 4. Devpost：**About / 技术要求说明里仍写 Workers AI + Llama，需改成 DeepSeek**（repo 里 submission.md 第 2 节已改，照抄即可）。已注册并建好草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，状态 DRAFT，未提交）。已填：名称、标语、About 全文、Built with 12 个标签、Try it out（GitHub + /health + TestFlight）、Additional info 全部文字字段（demo URL 已是 TestFlight 链接，评委测试说明含 TestFlight）。**用户要做**：Project details 页填 YouTube 视频链接；Additional info 页勾 3 个资格声明框、把测试说明里的 `<email> / <password>` 换成美区沙盒个人账号；Submit 页勾条款后点 Submit project。Devpost 的 Cloudflare / reCAPTCHA 都要用户在面板里点。截止 **11-12 12:00 PT**，目标 11-10。
 5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。

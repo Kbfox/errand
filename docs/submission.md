@@ -46,7 +46,7 @@ Lessons: Workers AI free tier (10k neurons/day) ran out mid-session → switched
 
 **Try it out links:** GitHub `https://github.com/Kbfox/gofer` · TestFlight `https://testflight.apple.com/join/wfkdTAhA` (external group "Judges" on ASC app "Gofer Shopping Agent" 6822217457; build 1.0 (1) approved by Beta App Review 2026-10-13, link live) · Backend health `https://gofer.kbfoxtk.workers.dev/health`
 
-**Video:** `<YouTube link>`
+**Video:** https://youtu.be/6iqcuK7nwzw
 
 **Primary category / prizes to tick:** Grand Prize; Honorable Mention: Best Use of Agentic Commerce, Best Use of PayPal + AI, Best Demo Delivery; Sponsor: Best Use of Channel3.
 
@@ -104,9 +104,9 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 ---
 
 ## 3. Pre-submission checklist
-- [ ] Video uploaded to YouTube (public or unlisted), ≤ 3:00, link in form
+- [x] Video uploaded to YouTube: https://youtu.be/6iqcuK7nwzw (2:31)
 - [ ] GitHub repo public, LICENSE visible in About
-- [ ] README placeholders filled (video, TestFlight)
+- [x] README placeholders filled (video, TestFlight)
 - [x] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) approved 2026-10-13). New builds: bump CURRENT_PROJECT_VERSION in project.yml, archive + export (upload), then add the build to Judges in ASC
 - [ ] Worker deployed, `/health` ok, cron enabled
 - [ ] Sandbox personal account credentials in testing notes
