@@ -7,7 +7,7 @@ Gofer 已于 10-13 在 Devpost 提交（状态 SUBMITTED，项目页 https://dev
 - 线上 Worker https://gofer.kbfoxtk.workers.dev，LLM 为 DeepSeek
 - 评委测试说明里的沙盒账号由用户本人填写，不要在对话或仓库里复述
 
-**App Store 上架（10-13 晚进行中，用户选择"按沙盒演示版提交"）**：ASC App "Gofer Shopping Agent"（6822217457）版本 1.0 已填好：副标题、类别 购物/效率、年龄分级 4+、免费、174 个地区（排除中国大陆，无 ICP）、App 隐私已发布（照片、其他用户内容、搜索历史、设备 ID、购买历史，均仅 App 功能、不关联身份、不追踪）、隐私政策 / 支持 / 营销 URL（挂在 `Kbfox/mustplay-site` 的 `gofer/` 下，因 gh token 无法开 Gofer 仓库 Pages）、描述 / 关键词 / 推广文本 / 版权、构建 **1.0 (2)**（首页加了沙盒演示提示，设置页加隐私/支持链接；Info.plist 版本号改为引用 build settings）、审核备注、**手动发布**。文案全文在 `docs/appstore.md`。**用户要做**：① 版本页"App 预览和截屏"上传 `~/Desktop/gofer-appstore-screenshots/01–07.jpg`（1206×2622）；② 审核备注里 `<sandbox email>` / `<sandbox password>` 换成沙盒账号并保存；③ App 信息 → 内容版权（本人声明）。然后由用户确认后点"添加以供审核 → 提交以供审核"。预期可能因 2.2（演示版）被拒。
+**App Store：✅ 10-13 18:50 已提交审核**（App Review 页状态"等待审核"，构建 **1.0 (3)**，手动发布）。ASC App "Gofer Shopping Agent"（6822217457）：副标题、类别 购物/效率、年龄分级 4+、免费、174 个地区（排除中国大陆，无 ICP）、App 隐私已发布（照片、其他用户内容、搜索历史、设备 ID、购买历史，均仅 App 功能、不关联身份、不追踪）、内容版权（用户本人声明"拥有第三方内容必要权利"）、7 张 6.3 英寸截图（用户上传，源文件 `~/Desktop/gofer-appstore-screenshots/`）、审核备注含沙盒账号（用户本人填写，勿在对话或仓库复述）。隐私 / 支持 / 营销页挂在 `Kbfox/mustplay-site` 的 `gofer/` 下（gh token 无法开 Gofer 仓库 Pages），源文件在本仓库 `docs/`。文案全文 `docs/appstore.md`。坑：xcodegen 的 target 默认 TARGETED_DEVICE_FAMILY=1,2，会让 ASC 要求 13 英寸 iPad 截图，已在 target settings 固定为 "1"；Info.plist 版本号改为引用 build settings。**风险**：可能按 2.2（演示 / 测试版应走 TestFlight）被拒；被拒就保持 TestFlight，不影响黑客松。通过后需要用户在 ASC 手动点"发布此版本"。
 
 **评审期（到结果公布）要保持**：Worker 在线、cron 在跑；DeepSeek 账户有余额（用户的 key，同 MustPlay）；PayPal 沙盒 App 不要删；不要再改 Devpost 以外的线上配置。
 **可选**：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
@@ -17,7 +17,7 @@ Gofer 已于 10-13 在 Devpost 提交（状态 SUBMITTED，项目页 https://dev
 **会话习惯**：另一个会话可能在 MustPlay 上并行开发，用的是 iPhone 18 Pro Max 模拟器和 8788 端口；**不要 `pkill -f "wrangler dev"`**，只按 PID 或 `pgrep -f "Gofer/worker"` 杀自己的。本地 Worker 用 8787。**模拟器工具每次调用都要显式传 device=250FDF0D-…**，不传会落到 18 Pro Max 上（本次误点了一次 MustPlay）。
 
 
-PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`。截止 **2026-11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
+PayPal AI Hackathon 2026 参赛项目。产品定义与排期见 `docs/plan.md`；赛后产品化（真实履约、上真钱前的安全修复、分阶段计划）见 `docs/roadmap.md`。截止 **2026-11-12 12:00 PT（北京 11-13 04:00）**，目标 11-10 提交。
 
 ## 结构
 - `worker/` Cloudflare Worker（TypeScript）。`src/paypal.ts` 已封装 OAuth / create order / capture / get / tracking / Vault 参数；`src/channel3.ts` 搜索（端点形状待对照 docs.trychannel3.com 确认）；`src/index.ts` 路由，`/agent` 尚未实现（第 2 周：Claude 工具循环 + SSE）
