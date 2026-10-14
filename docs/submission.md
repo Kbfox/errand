@@ -105,10 +105,10 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 
 ## 3. Pre-submission checklist
 - [x] Video uploaded to YouTube: https://youtu.be/6iqcuK7nwzw (2:31)
-- [ ] GitHub repo public, LICENSE visible in About
+- [x] GitHub repo public, MIT license detected by GitHub (checked 2026-10-13)
 - [x] README placeholders filled (video, TestFlight)
 - [x] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) approved 2026-10-13). New builds: bump CURRENT_PROJECT_VERSION in project.yml, archive + export (upload), then add the build to Judges in ASC
-- [ ] Worker deployed, `/health` ok, cron enabled
+- [x] Worker deployed, `/health` ok, cron `*/15` enabled (checked 2026-10-13)
 - [x] Sandbox personal account credentials in testing notes (filled by the user)
-- [ ] Prize categories ticked: Agentic Commerce, PayPal + AI, Demo Delivery, Channel3
+- [x] Prize categories: the form has no per-prize checkboxes; sponsor tool Channel3 selected in Additional info
 - [x] Submitted on **2026-10-13** (editable until the deadline)
