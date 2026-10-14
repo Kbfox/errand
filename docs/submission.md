@@ -1,7 +1,7 @@
 # Gofer — Devpost submission kit (PayPal AI Hackathon 2026)
 
 Deadline: **Nov 12, 2026 12:00 PT** (Beijing Nov 13 04:00). Target: submit **Nov 10**.
-Submission page: https://paypalaihackathon.devpost.com → Enter a Submission. **Draft created 2026-10-13**: https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview (public preview https://devpost.com/software/gofer-ex26ld). Section 2 below is already pasted in; still blank on Devpost: YouTube link, 3 eligibility checkboxes, sandbox credentials in the testing notes, TestFlight link as demo URL, final Submit.
+Submission page: https://paypalaihackathon.devpost.com → Enter a Submission. **Draft created 2026-10-13**: https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview (public preview https://devpost.com/software/gofer-ex26ld). Section 2 below is pasted in, video link and TestFlight demo URL filled, eligibility boxes ticked (10-13). Still open: sandbox credentials in the testing notes, then final Submit.
 
 ---
 
