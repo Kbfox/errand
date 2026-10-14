@@ -1,7 +1,7 @@
 # Gofer — Devpost submission kit (PayPal AI Hackathon 2026)
 
 Deadline: **Nov 12, 2026 12:00 PT** (Beijing Nov 13 04:00). Target: submit **Nov 10**.
-Submission page: https://paypalaihackathon.devpost.com → Enter a Submission. **Draft created 2026-10-13**: https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview (public preview https://devpost.com/software/gofer-ex26ld). Section 2 below is pasted in, video link and TestFlight demo URL filled, eligibility boxes ticked (10-13). Still open: sandbox credentials in the testing notes, then final Submit.
+Submission page: https://paypalaihackathon.devpost.com → Enter a Submission. **Draft created 2026-10-13**: https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview (public preview https://devpost.com/software/gofer-ex26ld). Section 2 below is pasted in, video link and TestFlight demo URL filled, eligibility boxes ticked (10-13). **Submitted 2026-10-13.**
 
 ---
 
@@ -109,6 +109,6 @@ Push notifications for unattended buys, PayPal webhooks for order state, multi-q
 - [x] README placeholders filled (video, TestFlight)
 - [x] TestFlight public link live: https://testflight.apple.com/join/wfkdTAhA (build 1.0 (1) approved 2026-10-13). New builds: bump CURRENT_PROJECT_VERSION in project.yml, archive + export (upload), then add the build to Judges in ASC
 - [ ] Worker deployed, `/health` ok, cron enabled
-- [ ] Sandbox personal account credentials in testing notes
+- [x] Sandbox personal account credentials in testing notes (filled by the user)
 - [ ] Prize categories ticked: Agentic Commerce, PayPal + AI, Demo Delivery, Channel3
-- [ ] Submit by **Nov 10**; re-read form for mandatory fields
+- [x] Submitted on **2026-10-13** (editable until the deadline)

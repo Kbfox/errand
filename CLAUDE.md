@@ -1,18 +1,14 @@
 # Gofer — 交接
 
-## 当前状态（2026-10-13 02:00，上一会话结束时）
-本会话做完的事（全部在线上环境验证）：
-- **App 整体走通一遍**（iPhone 18 Pro，Debug 签名构建、`API_BASE_URL` 覆盖为线上 Worker）：键盘搜索 3 卡 → PayPal 沙盒审批（登录态仍有效，无需密码）→ 绿色收据且钱包已存 → Rules $100/$500 → 跑鞋 $39.95 "Bought for you with PayPal" → 盯价 watch → curl simulate → 推送横幅（日志 UIWillPresentNotificationAction）→ Orders 页三种授权。**录前数据已重置**（该用户 orders/watches 清空、规则归零、vault_id 置 NULL），App 已重启，状态栏已 9:41。
-- 修了两个会影响演示的坑：① `xcodegen generate` 会把 `Gofer.entitlements` 清空（project.yml 没写 properties），推送注册静默失效——已在 project.yml 的 `entitlements.properties` 写 `aps-environment`；② 多轮对话里候选过滤用的是**第一条**用户消息（"blue switches"），第二个请求（跑鞋）全被当颜色冲突剔成 "Top 0"——`agent.ts` 改为用最新一条非 "(id …)" 的用户消息，已部署。
-- **TestFlight**：App Store Connect 记录已建，名称 **Gofer Shopping Agent**（"Gofer" 被占用），ASC App ID **6822217457**，SKU gofer-ios，主语言 en-US。Build **1.0 (1)** 已上传并处理完（归档用 `CODE_SIGNING_ALLOWED=NO`，导出 `-allowProvisioningUpdates` 自动签名；Info.plist 需 `UISupportedInterfaceOrientations` + `UIRequiresFullScreen`，已加进 project.yml）。内部群组 **Tester**（自动分发，尚未加测试员）和外部群组 **Judges** 已建。
-- 代码已提交（9eb021b），本次会话结束前会 push。
+## 当前状态（2026-10-13 晚）：**已提交 Devpost**
+Gofer 已于 10-13 在 Devpost 提交（状态 SUBMITTED，项目页 https://devpost.com/software/gofer-ex26ld，编辑入口 https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview）。截止 **11-12 12:00 PT** 前仍可编辑。
+- 视频 https://youtu.be/6iqcuK7nwzw（源文件与剪辑表见 `docs/submission.md` "Final take"）
+- TestFlight https://testflight.apple.com/join/wfkdTAhA（ASC App "Gofer Shopping Agent" 6822217457，构建 1.0 (1) 已过 Beta 审核，约 2027-01-11 过期）
+- 线上 Worker https://gofer.kbfoxtk.workers.dev，LLM 为 DeepSeek
+- 评委测试说明里的沙盒账号由用户本人填写，不要在对话或仓库里复述
 
-**剩余（需用户参与）**：（10-13 晚更新）
-1. ~~过一遍 App~~ 用户 10-13 已确认无问题。
-2. **视频完成**：YouTube https://youtu.be/6iqcuK7nwzw（2:31，源文件 `~/Desktop/gofer-video/Gofer-demo.mp4`，剪辑表见 `docs/submission.md` "Final take"），已写进 README / submission.md / Devpost。重录用 `scripts/record-demo.sh`。
-3. TestFlight：**完成**。构建 1.0 (1) 已通过 Beta App Review（10-13），公开链接 **https://testflight.apple.com/join/wfkdTAhA** 已生效，已写进 README / submission.md / Devpost。内部群组 Tester 已含用户本人（构建已推到其 iPhone 16 Pro Max）。再出新构建：project.yml 的 CURRENT_PROJECT_VERSION +1 → archive/export 上传 → ASC → Judges → 添加构建版本（已审核过的 App 后续构建一般免审或很快）。
-4. Devpost：草稿 **https://devpost.com/submit-to/31302-paypal-ai-hackathon/manage/submissions/1235021-gofer/project-overview**（公开预览 https://devpost.com/software/gofer-ex26ld，DRAFT，4/5 步）。10-13 晚已填：YouTube 链接、About 与两处 AI 说明改为 DeepSeek、Built with 标签（去掉 workers-ai/llama，加 deepseek/apns）、demo URL = TestFlight。Additional info 的 3 个声明框已勾。**用户要做**：测试说明里的 `<email> / <password>` 换成美区沙盒个人账号；Submit 页勾条款后点 Submit project（提交后截止前仍可编辑）。Devpost 偶尔弹 Cloudflare 验证，多数会自动通过。截止 **11-12 12:00 PT**，目标 11-10。
-5. 可选：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
+**评审期（到结果公布）要保持**：Worker 在线、cron 在跑；DeepSeek 账户有余额（用户的 key，同 MustPlay）；PayPal 沙盒 App 不要删；不要再改 Devpost 以外的线上配置。
+**可选**：给 Charlie（RevenueCat）回 MustPlay 上架短信（草稿在 MustPlay 对话里）。
 
 用户的模拟器 App 用户 id：`88A7DF07-8698-4991-92D2-51CBD94C102C`（UserDefaults 键 `gofer.userId`，用 plistlib 读 `Library/Preferences/com.gofer.ios.plist`）。该 id 在**远程 D1** 有 users/rules/devices 行（两台设备 token）；**本地 D1** 的钱包种在旧 id 下，联调本地时重新 `UPDATE users SET vault_id='85t12131c62061906' ...`。
 
